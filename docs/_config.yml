@@ -1,6 +1,6 @@
 title: LabOps Metrics Starter Kit
 description: A comprehensive laboratory operations metrics and analytics platform
-url: "https://yourusername.github.io"
+url: "https://TonyStarkWiz.github.io"
 baseurl: "/labops-metrics-starter-kit"
 
 # Build settings
@@ -18,7 +18,7 @@ author:
 social:
   name: LabOps Metrics
   links:
-    - https://github.com/yourusername/labops-metrics-starter-kit
+    - https://github.com/TonyStarkWiz/labops-metrics-starter-kit
 
 # Exclude from processing
 exclude:
