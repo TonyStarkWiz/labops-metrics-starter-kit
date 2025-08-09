@@ -1,2 +1,1 @@
-# System packages for Streamlit Cloud deployment
-# Add any system dependencies here if needed
+
