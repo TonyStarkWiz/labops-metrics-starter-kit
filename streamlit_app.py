@@ -2,31 +2,30 @@
 LabOps Metrics Starter Kit - Streamlit Dashboard
 Deployment-ready version for Streamlit Community Cloud
 """
-
 import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-from plotly.subplots import make_subplots
-import sqlite3
-from datetime import datetime, timedelta
-import numpy as np
 from pathlib import Path
+import sqlite3
+import numpy as np
+from datetime import datetime, timedelta
+import time
 
 # Page configuration
 st.set_page_config(
     page_title="LabOps Metrics Dashboard",
-    page_icon="🔬",
+    page_icon="🧪",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for better styling
+# Custom CSS for better appearance
 st.markdown("""
 <style>
     .main-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 2rem;
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        padding: 1rem;
         border-radius: 10px;
         color: white;
         text-align: center;
@@ -34,10 +33,10 @@ st.markdown("""
     }
     .metric-card {
         background: white;
-        padding: 1.5rem;
+        padding: 1rem;
         border-radius: 10px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         border-left: 4px solid #667eea;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     .stAlert {
         border-radius: 10px;
@@ -45,302 +44,220 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-@st.cache_data
+@st.cache_data(ttl=300)  # Cache for 5 minutes
 def load_data():
-    """Load data from SQLite database with caching."""
+    """Load data from SQLite database with caching and timeout."""
     try:
-        # Try to connect to the database
+        # Add timeout for deployment
+        start_time = time.time()
+        timeout = 30  # 30 seconds timeout
+        
         db_path = Path("labops.db")
         if not db_path.exists():
-            # If no database exists, create sample data
+            st.info("Database not found, creating sample data...")
             return create_sample_data()
         
         conn = sqlite3.connect("labops.db")
         specimens_df = pd.read_sql_query("SELECT * FROM specimens", conn)
         conn.close()
         
+        # Check timeout
+        if time.time() - start_time > timeout:
+            st.warning("Data loading took too long, using sample data...")
+            return create_sample_data()
+        
         if len(specimens_df) == 0:
+            st.info("Database is empty, creating sample data...")
             return create_sample_data()
         
         return specimens_df
+        
     except Exception as e:
         st.error(f"Error loading data: {e}")
+        st.info("Falling back to sample data...")
         return create_sample_data()
 
 def create_sample_data():
-    """Create sample data for demonstration purposes."""
-    np.random.seed(42)
-    
-    # Generate sample data
-    n_samples = 1000
-    base_time = datetime.now() - timedelta(days=7)
-    
-    data = []
-    for i in range(n_samples):
-        received_time = base_time + timedelta(
-            hours=np.random.randint(0, 168),
-            minutes=np.random.randint(0, 60)
-        )
+    """Create minimal sample data for demonstration purposes."""
+    try:
+        # Generate smaller dataset for faster deployment
+        np.random.seed(42)
+        n_samples = 100  # Reduced from 1200 for faster loading
         
-        # Random processing time between 1-8 hours
-        processing_hours = np.random.exponential(3) + 1
-        processing_time = timedelta(hours=min(processing_hours, 8))
-        processed_time = received_time + processing_time
+        # Generate dates for the last 7 days
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=7)
+        date_range = pd.date_range(start=start_date, end=end_date, freq='H')
         
-        # Random status
-        status = np.random.choice(['completed', 'processing', 'error'], p=[0.8, 0.15, 0.05])
+        # Sample data
+        assay_types = ['Blood Chemistry', 'Hematology', 'Microbiology', 'Immunology', 'Molecular']
+        statuses = ['Completed', 'In Progress', 'Pending', 'Failed']
         
-        # Random assay type
-        assay_type = np.random.choice(['PCR', 'ELISA', 'Western Blot', 'Flow Cytometry'])
+        data = []
+        for i in range(n_samples):
+            received_at = np.random.choice(date_range)
+            processing_time = np.random.randint(1, 48)  # 1-48 hours
+            processed_at = received_at + timedelta(hours=processing_time)
+            
+            specimen = {
+                'specimen_id': f'SP{i+1:06d}',
+                'patient_id': f'P{i+1:06d}',
+                'assay_type': np.random.choice(assay_types),
+                'status': np.random.choice(statuses),
+                'received_at': received_at,
+                'processed_at': processed_at,
+                'priority': np.random.choice(['High', 'Medium', 'Low']),
+                'lab_technician': f'Tech{np.random.randint(1, 6)}',
+                'error_code': np.random.choice([None, 'E001', 'E002', 'E003'], p=[0.8, 0.1, 0.05, 0.05])
+            }
+            data.append(specimen)
         
-        # Random machine
-        machine = np.random.choice(['Machine A', 'Machine B', 'Machine C'])
+        return pd.DataFrame(data)
         
-        data.append({
-            'specimen_id': f'SP{i:06d}',
-            'assay_type': assay_type,
-            'status': status,
-            'received_at': received_time,
-            'processed_at': processed_time if status == 'completed' else None,
-            'machine': machine,
-            'priority': np.random.choice(['high', 'medium', 'low']),
-            'error_code': np.random.choice(['None', 'QC_FAIL', 'INSUFFICIENT_SAMPLE'], p=[0.95, 0.03, 0.02]) if status == 'error' else 'None'
+    except Exception as e:
+        st.error(f"Error creating sample data: {e}")
+        # Return minimal fallback data
+        return pd.DataFrame({
+            'specimen_id': ['SP000001'],
+            'patient_id': ['P000001'],
+            'assay_type': ['Blood Chemistry'],
+            'status': ['Completed'],
+            'received_at': [datetime.now() - timedelta(hours=1)],
+            'processed_at': [datetime.now()],
+            'priority': ['Medium'],
+            'lab_technician': ['Tech1'],
+            'error_code': [None]
         })
-    
-    return pd.DataFrame(data)
 
 def calculate_tat_metrics(df):
-    """Calculate TAT metrics."""
-    completed = df[df['status'] == 'completed'].copy()
-    if len(completed) == 0:
-        return {'p50': 0, 'p95': 0, 'avg': 0}
-    
-    completed['tat_hours'] = (completed['processed_at'] - completed['received_at']).dt.total_seconds() / 3600
-    
-    return {
-        'p50': completed['tat_hours'].quantile(0.5),
-        'p95': completed['tat_hours'].quantile(0.95),
-        'avg': completed['tat_hours'].mean()
-    }
+    """Calculate TAT metrics with error handling."""
+    try:
+        if df.empty:
+            return 0, 0, 0
+        
+        # Filter completed specimens
+        completed = df[df['status'] == 'Completed'].copy()
+        if completed.empty:
+            return 0, 0, 0
+        
+        # Calculate TAT in hours
+        completed['tat_hours'] = (completed['processed_at'] - completed['received_at']).dt.total_seconds() / 3600
+        
+        avg_tat = completed['tat_hours'].mean()
+        median_tat = completed['tat_hours'].median()
+        max_tat = completed['tat_hours'].max()
+        
+        return round(avg_tat, 2), round(median_tat, 2), round(max_tat, 2)
+        
+    except Exception as e:
+        st.error(f"Error calculating TAT metrics: {e}")
+        return 0, 0, 0
 
-def calculate_throughput(df, grain="hour"):
-    """Calculate throughput metrics."""
-    if len(df) == 0:
-        return pd.DataFrame()
-    
-    df_copy = df.copy()
-    df_copy['processed_date'] = pd.to_datetime(df_copy['processed_at']).dt.date
-    
-    if grain == "hour":
-        df_copy['time_bucket'] = pd.to_datetime(df_copy['processed_at']).dt.floor('H')
-    else:
-        df_copy['time_bucket'] = pd.to_datetime(df_copy['processed_at']).dt.date
-    
-    throughput = df_copy.groupby('time_bucket').size().reset_index(name='count')
-    throughput['grain'] = grain
-    
-    return throughput
+def calculate_throughput(df):
+    """Calculate throughput metrics with error handling."""
+    try:
+        if df.empty:
+            return 0, 0
+        
+        # Today's throughput
+        today = datetime.now().date()
+        today_specimens = df[df['processed_at'].dt.date == today]
+        today_throughput = len(today_specimens)
+        
+        # Weekly throughput
+        week_ago = today - timedelta(days=7)
+        weekly_specimens = df[df['processed_at'].dt.date >= week_ago]
+        weekly_throughput = len(weekly_specimens)
+        
+        return today_throughput, weekly_throughput
+        
+    except Exception as e:
+        st.error(f"Error calculating throughput: {e}")
+        return 0, 0
 
 def main():
     """Main Streamlit application."""
+    st.markdown('<h1 class="main-header">🧪 LabOps Metrics Dashboard</h1>', unsafe_allow_html=True)
     
-    # Header
-    st.markdown("""
-    <div class="main-header">
-        <h1>🔬 LabOps Metrics Dashboard</h1>
-        <p>Real-time laboratory operations monitoring and analytics</p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # Load data
-    with st.spinner("Loading lab data..."):
+    # Load data with progress indicator
+    with st.spinner("Loading data..."):
         df = load_data()
     
-    # Sidebar filters
-    st.sidebar.header("🔍 Filters")
+    if df is None or df.empty:
+        st.error("Failed to load data. Please check the application.")
+        return
     
-    # Date range filter
-    if len(df) > 0:
-        min_date = df['received_at'].min().date()
-        max_date = df['received_at'].max().date()
-        
-        date_range = st.sidebar.date_input(
-            "Date Range",
-            value=(min_date, max_date),
-            min_value=min_date,
-            max_value=max_date
-        )
-        
-        # Status filter
-        status_filter = st.sidebar.multiselect(
-            "Status",
-            options=df['status'].unique(),
-            default=df['status'].unique()
-        )
-        
-        # Assay type filter
-        assay_filter = st.sidebar.multiselect(
-            "Assay Type",
-            options=df['assay_type'].unique(),
-            default=df['assay_type'].unique()
-        )
-        
-        # Apply filters
-        if len(date_range) == 2:
-            start_date, end_date = date_range
-            filtered_df = df[
-                (df['received_at'].dt.date >= start_date) &
-                (df['received_at'].dt.date <= end_date) &
-                (df['status'].isin(status_filter)) &
-                (df['assay_type'].isin(assay_filter))
-            ]
-        else:
-            filtered_df = df
-    else:
-        filtered_df = df
+    # Display basic info
+    st.success(f"✅ Data loaded successfully! {len(df)} specimens available.")
     
-    # Main content
-    col1, col2, col3, col4 = st.columns(4)
+    # Calculate metrics
+    avg_tat, median_tat, max_tat = calculate_tat_metrics(df)
+    today_throughput, weekly_throughput = calculate_throughput(df)
     
     # KPI Cards
+    col1, col2, col3, col4 = st.columns(4)
+    
     with col1:
-        total_specimens = len(filtered_df)
-        st.markdown(f"""
-        <div class="metric-card">
-            <h3>📊 Total Specimens</h3>
-            <h2>{total_specimens:,}</h2>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown('<div class="metric-card">', unsafe_allow_html=True)
+        st.metric("Avg TAT (hrs)", f"{avg_tat}")
+        st.markdown('</div>', unsafe_allow_html=True)
     
     with col2:
-        completed = len(filtered_df[filtered_df['status'] == 'completed'])
-        completion_rate = (completed / total_specimens * 100) if total_specimens > 0 else 0
-        st.markdown(f"""
-        <div class="metric-card">
-            <h3>✅ Completion Rate</h3>
-            <h2>{completion_rate:.1f}%</h2>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown('<div class="metric-card">', unsafe_allow_html=True)
+        st.metric("Today's Throughput", f"{today_throughput}")
+        st.markdown('</div>', unsafe_allow_html=True)
     
     with col3:
-        errors = len(filtered_df[filtered_df['status'] == 'error'])
-        error_rate = (errors / total_specimens * 100) if total_specimens > 0 else 0
-        st.markdown(f"""
-        <div class="metric-card">
-            <h3>❌ Error Rate</h3>
-            <h2>{error_rate:.1f}%</h2>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown('<div class="metric-card">', unsafe_allow_html=True)
+        st.metric("Weekly Throughput", f"{weekly_throughput}")
+        st.markdown('</div>', unsafe_allow_html=True)
     
     with col4:
-        tat_metrics = calculate_tat_metrics(filtered_df)
-        st.markdown(f"""
-        <div class="metric-card">
-            <h3>⏱️ Avg TAT</h3>
-            <h2>{tat_metrics['avg']:.1f}h</h2>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown('<div class="metric-card">', unsafe_allow_html=True)
+        error_rate = len(df[df['error_code'].notna()]) / len(df) * 100
+        st.metric("Error Rate", f"{error_rate:.1f}%")
+        st.markdown('</div>', unsafe_allow_html=True)
     
     # Charts
-    st.markdown("---")
-    
     col1, col2 = st.columns(2)
     
     with col1:
-        st.subheader("📈 Status Distribution")
-        status_counts = filtered_df['status'].value_counts()
-        fig_status = px.pie(
-            values=status_counts.values,
-            names=status_counts.index,
-            title="Specimen Status Distribution"
-        )
-        fig_status.update_traces(textposition='inside', textinfo='percent+label')
+        st.subheader("📊 Status Distribution")
+        status_counts = df['status'].value_counts()
+        fig_status = px.pie(values=status_counts.values, names=status_counts.index, title="Specimen Status")
         st.plotly_chart(fig_status, use_container_width=True)
     
     with col2:
-        st.subheader("🔬 Assay Type Distribution")
-        assay_counts = filtered_df['assay_type'].value_counts()
-        fig_assay = px.bar(
-            x=assay_counts.index,
-            y=assay_counts.values,
-            title="Specimens by Assay Type"
-        )
+        st.subheader("🧬 Assay Type Distribution")
+        assay_counts = df['assay_type'].value_counts()
+        fig_assay = px.bar(x=assay_counts.index, y=assay_counts.values, title="Assay Types")
         st.plotly_chart(fig_assay, use_container_width=True)
     
-    # TAT Analysis
-    st.markdown("---")
-    st.subheader("⏱️ Turnaround Time Analysis")
-    
-    if len(filtered_df[filtered_df['status'] == 'completed']) > 0:
-        completed_df = filtered_df[filtered_df['status'] == 'completed'].copy()
+    # TAT Timeline
+    st.subheader("⏱️ Turnaround Time Timeline")
+    completed_df = df[df['status'] == 'Completed'].copy()
+    if not completed_df.empty:
         completed_df['tat_hours'] = (completed_df['processed_at'] - completed_df['received_at']).dt.total_seconds() / 3600
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            fig_tat_hist = px.histogram(
-                completed_df,
-                x='tat_hours',
-                nbins=30,
-                title="TAT Distribution (Hours)",
-                labels={'tat_hours': 'Turnaround Time (Hours)'}
-            )
-            st.plotly_chart(fig_tat_hist, use_container_width=True)
-        
-        with col2:
-            fig_tat_by_assay = px.box(
-                completed_df,
-                x='assay_type',
-                y='tat_hours',
-                title="TAT by Assay Type"
-            )
-            st.plotly_chart(fig_tat_by_assay, use_container_width=True)
-    
-    # Throughput Analysis
-    st.markdown("---")
-    st.subheader("📊 Throughput Analysis")
-    
-    if len(filtered_df) > 0:
-        throughput_hourly = calculate_throughput(filtered_df, "hour")
-        
-        if len(throughput_hourly) > 0:
-            fig_throughput = px.line(
-                throughput_hourly,
-                x='time_bucket',
-                y='count',
-                title="Hourly Throughput",
-                labels={'time_bucket': 'Time', 'count': 'Specimens Processed'}
-            )
-            st.plotly_chart(fig_throughput, use_container_width=True)
+        fig_tat = px.scatter(completed_df, x='received_at', y='tat_hours', 
+                            title="TAT by Receipt Date", labels={'tat_hours': 'TAT (hours)'})
+        st.plotly_chart(fig_tat, use_container_width=True)
     
     # Data Table
-    st.markdown("---")
-    st.subheader("📋 Raw Data")
-    
-    # Show sample of data
-    st.dataframe(
-        filtered_df.head(100),
-        use_container_width=True,
-        hide_index=True
-    )
+    st.subheader("📋 Specimen Data")
+    st.dataframe(df.head(20), use_container_width=True)
     
     # Download button
-    csv = filtered_df.to_csv(index=False)
+    csv = df.to_csv(index=False)
     st.download_button(
         label="📥 Download Data as CSV",
         data=csv,
-        file_name=f"labops_metrics_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+        file_name="labops_metrics.csv",
         mime="text/csv"
     )
     
     # Footer
     st.markdown("---")
-    st.markdown("""
-    <div style="text-align: center; color: #666; padding: 1rem;">
-        <p>🔬 LabOps Metrics Starter Kit | Built with Streamlit</p>
-        <p>Real-time laboratory operations monitoring and analytics platform</p>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown("**LabOps Metrics Starter Kit** - Built with Streamlit and FastAPI")
 
 if __name__ == "__main__":
     main()
