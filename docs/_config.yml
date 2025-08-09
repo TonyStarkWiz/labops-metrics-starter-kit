@@ -1,0 +1,31 @@
+title: LabOps Metrics Starter Kit
+description: A comprehensive laboratory operations metrics and analytics platform
+url: "https://yourusername.github.io"
+baseurl: "/labops-metrics-starter-kit"
+
+# Build settings
+theme: jekyll-theme-cayman
+plugins:
+  - jekyll-seo-tag
+  - jekyll-sitemap
+
+# SEO
+author:
+  name: LabOps Team
+  email: team@labops.com
+
+# Social
+social:
+  name: LabOps Metrics
+  links:
+    - https://github.com/yourusername/labops-metrics-starter-kit
+
+# Exclude from processing
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor/bundle/
+  - vendor/cache/
+  - vendor/gems/
+  - vendor/ruby/

@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LabOps Metrics Starter Kit</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+
+        .feature-card {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .feature-card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .metrics-section {
+            background: #e3f2fd;
+            padding: 30px;
+            border-radius: 10px;
+            margin: 30px 0;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .metric-item {
+            text-align: center;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .metric-label {
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: background 0.3s ease;
+            margin: 10px 5px;
+        }
+
+        .btn:hover {
+            background: #5a67d8;
+        }
+
+        .btn-secondary {
+            background: #718096;
+        }
+
+        .btn-secondary:hover {
+            background: #4a5568;
+        }
+
+        .architecture-diagram {
+            background: #f7fafc;
+            padding: 30px;
+            border-radius: 10px;
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .tech-tag {
+            background: #667eea;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .container {
+                padding: 10px;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔬 LabOps Metrics Starter Kit</h1>
+            <p>A comprehensive laboratory operations metrics and analytics platform</p>
+        </div>
+
+        <div class="main-content">
+            <h2>🚀 Quick Start</h2>
+            <p>Get up and running in minutes with our streamlined setup process:</p>
+            
+            <div class="code-block">
+# Install dependencies<br>
+pip install -r requirements.txt<br><br>
+
+# Generate sample data<br>
+python scripts/gen_synthetic_data.py --days 3 --per-day 1200<br><br>
+
+# Start the API server<br>
+uvicorn app.main:app --reload<br><br>
+
+# Launch the dashboard<br>
+streamlit run app/dashboards/streamlit_app.py
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <h3>📊 Real-time Metrics</h3>
+                    <p>Monitor TAT, throughput, error rates, and SLA compliance with live dashboards and automated alerts.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <h3>🔍 Data Quality</h3>
+                    <p>Built-in data validation rules engine with automated quality checks and failure reporting.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <h3>📈 Interactive Analytics</h3>
+                    <p>Streamlit-powered dashboard with time-series charts, breakdowns, and what-if analysis capabilities.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <h3>🔔 Smart Alerts</h3>
+                    <p>Microsoft Teams integration for SLA breaches and automated standup summaries.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <h3>📊 Power BI Ready</h3>
+                    <p>Export data in Power BI-compatible formats with pre-built data models and instructions.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <h3>🧪 Comprehensive Testing</h3>
+                    <p>Full test suite with unit tests, integration tests, and automated CI/CD pipeline.</p>
+                </div>
+            </div>
+
+            <div class="metrics-section">
+                <h2>📊 Key Metrics & KPIs</h2>
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <div class="metric-value">TAT</div>
+                        <div class="metric-label">Turnaround Time</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value">Throughput</div>
+                        <div class="metric-label">Specimens/Hour</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value">Error Rate</div>
+                        <div class="metric-label">Quality Metrics</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value">SLA</div>
+                        <div class="metric-label">Compliance %</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="architecture-diagram">
+                <h2>🏗️ System Architecture</h2>
+                <p>Modern, scalable architecture built with FastAPI, SQLAlchemy, and Streamlit</p>
+                <div class="tech-stack">
+                    <span class="tech-tag">FastAPI</span>
+                    <span class="tech-tag">SQLAlchemy</span>
+                    <span class="tech-tag">Streamlit</span>
+                    <span class="tech-tag">Pandas</span>
+                    <span class="tech-tag">SQLite</span>
+                    <span class="tech-tag">Plotly</span>
+                    <span class="tech-tag">Pytest</span>
+                    <span class="tech-tag">GitHub Actions</span>
+                </div>
+            </div>
+
+            <h2>📚 Documentation</h2>
+            <p>Comprehensive documentation to help you get the most out of the platform:</p>
+            
+            <div style="margin: 20px 0;">
+                <a href="https://github.com/yourusername/labops-metrics-starter-kit/blob/main/docs/ARCHITECTURE.md" class="btn">🏗️ Architecture Guide</a>
+                <a href="https://github.com/yourusername/labops-metrics-starter-kit/blob/main/docs/ROADMAP.md" class="btn">🗺️ Development Roadmap</a>
+                <a href="https://github.com/yourusername/labops-metrics-starter-kit/blob/main/docs/DEMO_SCRIPT.md" class="btn">🎬 Demo Script</a>
+            </div>
+
+            <h2>🔧 Development Tools</h2>
+            <p>Professional-grade development experience with automated tooling:</p>
+            
+            <div class="code-block">
+# Code formatting and linting<br>
+make format<br>
+make lint<br><br>
+
+# Run tests with coverage<br>
+make test<br><br>
+
+# Pre-commit hooks<br>
+pre-commit install
+            </div>
+
+            <h2>📁 Project Structure</h2>
+            <div class="code-block">
+labops-metrics-starter-kit/<br>
+├── app/                    # Core application<br>
+│   ├── api/               # FastAPI endpoints<br>
+│   ├── core/              # Database & settings<br>
+│   ├── dashboards/        # Streamlit dashboard<br>
+│   ├── metrics/           # Business logic<br>
+│   └── alerts/            # Notification system<br>
+├── scripts/                # CLI tools<br>
+├── tests/                  # Test suite<br>
+├── docs/                   # Documentation<br>
+└── data/                   # Data files
+            </div>
+
+            <h2>🚀 Getting Started</h2>
+            <p>Ready to transform your lab operations? Follow these steps:</p>
+            
+            <div style="margin: 20px 0;">
+                <a href="https://github.com/yourusername/labops-metrics-starter-kit" class="btn">📥 Clone Repository</a>
+                <a href="https://github.com/yourusername/labops-metrics-starter-kit/issues" class="btn btn-secondary">🐛 Report Issues</a>
+                <a href="https://github.com/yourusername/labops-metrics-starter-kit/pulls" class="btn btn-secondary">🤝 Contribute</a>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>&copy; 2024 LabOps Metrics Starter Kit. Built with ❤️ for the scientific community.</p>
+        </div>
+    </div>
+
+    <script>
+        // Add some interactivity
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animate metric values
+            const metrics = document.querySelectorAll('.metric-value');
+            metrics.forEach(metric => {
+                metric.style.opacity = '0';
+                metric.style.transform = 'translateY(20px)';
+                
+                setTimeout(() => {
+                    metric.style.transition = 'all 0.6s ease';
+                    metric.style.opacity = '1';
+                    metric.style.transform = 'translateY(0)';
+                }, 500);
+            });
+
+            // Smooth scroll for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
