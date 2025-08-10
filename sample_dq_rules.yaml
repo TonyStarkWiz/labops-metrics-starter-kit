@@ -1,0 +1,86 @@
+rules:
+  - name: "Required Columns Check"
+    description: "Ensure all required columns are present"
+    rule_type: "required_columns"
+    parameters:
+      columns: ["specimen_id", "received_at", "processed_at", "status", "assay_type"]
+    severity: "ERROR"
+
+  - name: "Timestamp Order Validation"
+    description: "Ensure received_at < processed_at"
+    rule_type: "timestamp_order"
+    parameters:
+      received_column: "received_at"
+      processed_column: "processed_at"
+    severity: "ERROR"
+
+  - name: "No Future Dates"
+    description: "Check for future dates in timestamp columns"
+    rule_type: "no_future_dates"
+    parameters:
+      columns: ["received_at", "processed_at"]
+    severity: "WARNING"
+
+  - name: "Valid Status Values"
+    description: "Ensure status values are valid"
+    rule_type: "allowed_values"
+    parameters:
+      column: "status"
+      allowed_values: ["received", "in_process", "completed", "error", "cancelled"]
+    severity: "ERROR"
+
+  - name: "Valid Assay Types"
+    description: "Ensure assay types are valid"
+    rule_type: "allowed_values"
+    parameters:
+      column: "assay_type"
+      allowed_values: ["blood_chemistry", "hematology", "microbiology", "molecular", "immunology"]
+    severity: "ERROR"
+
+  - name: "Timestamp Data Types"
+    description: "Ensure timestamp columns are datetime"
+    rule_type: "data_types"
+    parameters:
+      columns:
+        received_at: "datetime"
+        processed_at: "datetime"
+    severity: "ERROR"
+
+  - name: "Unique Specimen IDs"
+    description: "Ensure specimen IDs are unique"
+    rule_type: "uniqueness"
+    parameters:
+      columns: ["specimen_id"]
+    severity: "ERROR"
+
+  - name: "No Missing Critical Fields"
+    description: "Ensure critical fields have no missing values"
+    rule_type: "completeness"
+    parameters:
+      columns: ["specimen_id", "status", "assay_type"]
+      threshold: 0.0
+    severity: "ERROR"
+
+  - name: "Machine ID Format"
+    description: "Ensure machine IDs follow expected format"
+    rule_type: "allowed_values"
+    parameters:
+      column: "machine_id"
+      allowed_values: ["M001", "M002", "M003", "M004", "M005"]
+    severity: "WARNING"
+
+  - name: "Operator ID Format"
+    description: "Ensure operator IDs follow expected format"
+    rule_type: "allowed_values"
+    parameters:
+      column: "operator_id"
+      allowed_values: ["OP001", "OP002", "OP003", "OP004", "OP005"]
+    severity: "WARNING"
+
+  - name: "Error Code Validation"
+    description: "Ensure error codes are valid when status is 'error'"
+    rule_type: "allowed_values"
+    parameters:
+      column: "error_code"
+      allowed_values: ["E001", "E002", "E003", "E004", "E005", "E006"]
+    severity: "WARNING"

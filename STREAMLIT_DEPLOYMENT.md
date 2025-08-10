@@ -1,226 +1,184 @@
-# 🚀 Streamlit Community Cloud Deployment Guide
+# 🚀 Streamlit Cloud Deployment Guide
 
-This guide will walk you through deploying your LabOps Metrics Starter Kit to Streamlit Community Cloud.
+This guide will help you deploy your **LabOps Metrics Starter Kit** (including the integrated Micro-PoCs) to Streamlit Cloud.
 
 ## 📋 Prerequisites
 
 - A GitHub account
-- Your repository pushed to GitHub
-- A Streamlit Community Cloud account
+- A Streamlit Cloud account (free at [share.streamlit.io](https://share.streamlit.io))
+- Your code pushed to a GitHub repository
 
-## 🔧 Step-by-Step Deployment
+## 🔧 Repository Setup
 
-### 1. **Push Your Code to GitHub**
+### 1. Ensure Your Repository Structure
 
-First, ensure your code is pushed to GitHub:
+Your repository should have this structure for Streamlit Cloud deployment:
+
+```
+labops-metrics-starter-kit/
+├── streamlit_app.py          # Main Streamlit application (root level)
+├── requirements.txt          # Python dependencies
+├── .streamlit/
+│   └── config.toml          # Streamlit configuration
+├── sample_dq_rules.yaml     # Sample DQ rules
+├── app/                     # Core application code
+├── scripts/                 # Micro-PoC scripts
+└── README.md               # Documentation
+```
+
+### 2. Verify Key Files
+
+- ✅ **`streamlit_app.py`** - Main app with 3 tabs (Metrics, Data Quality, Teams Bot)
+- ✅ **`requirements.txt`** - All dependencies including `pyyaml`, `seaborn`, `plotly`
+- ✅ **`.streamlit/config.toml`** - Production-optimized configuration
+- ✅ **`sample_dq_rules.yaml`** - Sample data quality rules
+
+## 🌐 Deploy to Streamlit Cloud
+
+### Step 1: Push to GitHub
 
 ```bash
+# Ensure all changes are committed and pushed
 git add .
-git commit -m "Add Streamlit Cloud deployment files"
+git commit -m "Prepare for Streamlit Cloud deployment"
 git push origin main
 ```
 
-### 2. **Sign Up for Streamlit Community Cloud**
+### Step 2: Connect to Streamlit Cloud
 
-1. Go to [https://share.streamlit.io/](https://share.streamlit.io/)
-2. Click **"Sign in with GitHub"**
-3. Authorize Streamlit to access your GitHub account
-4. Complete the signup process
+1. Go to [share.streamlit.io](https://share.streamlit.io)
+2. Sign in with your GitHub account
+3. Click **"New app"**
+4. Configure your app:
 
-### 3. **Deploy Your App**
+   **Repository:** `yourusername/labops-metrics-starter-kit`
+   
+   **Branch:** `main`
+   
+   **Main file path:** `streamlit_app.py`
+   
+   **App URL:** `labops-metrics-starter-kit` (or your preferred name)
 
-1. **Click "New app"** in Streamlit Community Cloud
-2. **Repository**: Select `TonyStarkWiz/labops-metrics-starter-kit`
-3. **Branch**: Select `main`
-4. **Main file path**: Enter `streamlit_app.py`
-5. **App URL**: This will be auto-generated (e.g., `labops-metrics-starter-kit`)
-6. **Click "Deploy!"**
+### Step 3: Deploy
 
-### 4. **Wait for Deployment**
+Click **"Deploy!"** and wait for the build to complete.
 
-- Initial deployment takes 2-5 minutes
-- You'll see build logs in real-time
-- Status will change to "Running" when complete
+## 🔍 What Gets Deployed
 
-## 🌐 Access Your Deployed App
+Your deployed app will include:
 
-Once deployed, your app will be available at:
-```
-https://labops-metrics-starter-kit.streamlit.app
-```
+### 📊 **Metrics Dashboard Tab**
+- Real-time laboratory metrics
+- TAT, throughput, and error rate monitoring
+- Interactive charts and data tables
+- Sample data generation for demonstration
 
-## 📁 Deployment Files Explained
+### 🔍 **Data Quality Tab**
+- CSV file upload and validation
+- Built-in sample rules
+- Custom YAML rules support
+- Violation reporting and visualization
 
-### **`streamlit_app.py`** (Root Directory)
-- **Purpose**: Main Streamlit application file
-- **Features**: 
-  - Real-time lab metrics dashboard
-  - Interactive charts and filters
-  - Sample data generation for demo
-  - Responsive design with custom CSS
-  - Data export functionality
+### 🤖 **Teams Bot Tab**
+- Stand-up update creation
+- Multiple input methods (manual, JSON, templates)
+- Teams webhook configuration
+- Dry-run mode for testing
 
-### **`.streamlit/config.toml`**
-- **Purpose**: Streamlit configuration
-- **Settings**:
-  - Custom theme colors matching your brand
-  - Server configuration for production
-  - Performance optimizations
+## ⚙️ Configuration Options
 
-### **`requirements.txt`**
-- **Purpose**: Python dependencies
-- **Key Packages**:
-  - `streamlit==1.48.0` - Web framework
-  - `pandas==2.2.3` - Data manipulation
-  - `plotly==5.24.0` - Interactive charts
-  - `numpy==1.26.4` - Numerical computing
+### Environment Variables (Optional)
 
-### **`packages.txt`**
-- **Purpose**: System-level dependencies
-- **Current**: Empty (no system packages needed)
+You can set these in Streamlit Cloud for enhanced functionality:
 
-## 🔍 App Features
+- `TEAMS_WEBHOOK_URL` - Your Microsoft Teams webhook URL
+- `DATABASE_URL` - Database connection string (if using external DB)
 
-### **Dashboard Components**
-1. **KPI Cards**: Total specimens, completion rate, error rate, average TAT
-2. **Interactive Charts**: Status distribution, assay type breakdown
-3. **TAT Analysis**: Histograms and box plots by assay type
-4. **Throughput Analysis**: Hourly processing trends
-5. **Data Table**: Raw data with filtering and export
+### Customization
 
-### **Interactive Elements**
-- **Sidebar Filters**: Date range, status, assay type
-- **Real-time Updates**: Data refreshes automatically
-- **Responsive Design**: Works on desktop and mobile
-- **Data Export**: Download filtered data as CSV
+- **Theme colors** - Edit `.streamlit/config.toml`
+- **Sample data** - Modify `create_sample_data()` function
+- **DQ rules** - Update `sample_dq_rules.yaml`
 
 ## 🚨 Troubleshooting
 
-### **Common Issues**
+### Common Issues
 
-#### 1. **Build Fails**
-- Check `requirements.txt` for compatible versions
-- Ensure all imports are available
-- Check the build logs for specific errors
+1. **Import Errors**
+   - Ensure all dependencies are in `requirements.txt`
+   - Check that file paths are correct
 
-#### 2. **App Won't Load**
-- Verify the main file path is correct
-- Check if the repository is public
-- Ensure the branch exists
+2. **File Not Found Errors**
+   - Verify `sample_dq_rules.yaml` exists in root directory
+   - Check file permissions
 
-#### 3. **Missing Dependencies**
-- Add missing packages to `requirements.txt`
-- Check for version conflicts
-- Use compatible versions for Python 3.9+
+3. **Memory Issues**
+   - Reduce sample data size in `create_sample_data()`
+   - Optimize chart rendering
 
-### **Debug Steps**
+### Build Logs
 
-1. **Check Build Logs**: Look for error messages in deployment logs
-2. **Test Locally**: Run `streamlit run streamlit_app.py` locally first
-3. **Verify Dependencies**: Ensure all imports work locally
-4. **Check File Paths**: Verify file references are correct
+Check Streamlit Cloud build logs for specific error messages:
+1. Go to your app in Streamlit Cloud
+2. Click **"Manage app"**
+3. View **"Build logs"** for detailed error information
 
-## 🔄 Updating Your App
+## 🔄 Updates and Maintenance
 
-### **Automatic Updates**
-- Streamlit automatically redeploys when you push to the main branch
-- No manual intervention required
-- Updates typically deploy in 2-3 minutes
+### Updating Your App
 
-### **Manual Redeploy**
-1. Go to your app in Streamlit Community Cloud
-2. Click the three dots menu
-3. Select "Redeploy"
+1. Make changes locally
+2. Test with `streamlit run streamlit_app.py`
+3. Commit and push to GitHub
+4. Streamlit Cloud automatically redeploys
 
-## 📊 Monitoring & Analytics
+### Monitoring
 
-### **Built-in Analytics**
-- **Page Views**: Track visitor engagement
-- **Session Duration**: Monitor user interaction time
-- **Error Rates**: Identify and fix issues quickly
+- Check app performance in Streamlit Cloud dashboard
+- Monitor resource usage
+- Review user feedback and analytics
 
-### **Performance Metrics**
-- **Load Times**: Optimize for better user experience
-- **Resource Usage**: Monitor app performance
-- **Uptime**: Track app availability
+## 🌟 Features in Production
 
-## 🎨 Customization
+### ✅ **Working Features**
+- Complete metrics dashboard with sample data
+- Data quality validation engine
+- Teams stand-up bot interface
+- Responsive design and modern UI
+- File upload and processing
+- Interactive charts and visualizations
 
-### **Theme Customization**
-Edit `.streamlit/config.toml`:
-```toml
-[theme]
-primaryColor = "#your-color"
-backgroundColor = "#your-bg-color"
-secondaryBackgroundColor = "#your-secondary-bg"
-textColor = "#your-text-color"
+### 🔧 **Simulated Features** (for demo purposes)
+- Data quality validation (simulated API calls)
+- Teams posting (dry-run mode)
+- Database operations (sample data generation)
+
+## 📱 Access Your Deployed App
+
+Once deployed, your app will be available at:
+```
+https://labops-metrics-starter-kit.streamlit.app/
 ```
 
-### **Adding Features**
-- **New Charts**: Extend the dashboard with additional visualizations
-- **Data Sources**: Connect to external databases or APIs
-- **Authentication**: Add user login and access control
-- **Real-time Updates**: Implement live data streaming
+## 🎯 Next Steps
 
-## 🔐 Security Considerations
+After successful deployment:
 
-### **Data Privacy**
-- **Sample Data**: App generates demo data locally
-- **No External APIs**: All processing happens in Streamlit Cloud
-- **Secure Connections**: HTTPS enforced by Streamlit
+1. **Test all functionality** - Verify each tab works correctly
+2. **Configure Teams webhook** - Set up real Teams integration
+3. **Customize rules** - Modify DQ rules for your use case
+4. **Share with team** - Invite colleagues to use the dashboard
+5. **Monitor usage** - Track app performance and user engagement
 
-### **Access Control**
-- **Public Access**: App is publicly accessible
-- **No Authentication**: Consider adding if needed
-- **Rate Limiting**: Built-in protection against abuse
+## 🆘 Support
 
-## 📱 Mobile Optimization
+If you encounter issues:
 
-### **Responsive Design**
-- **Mobile-First**: Optimized for mobile devices
-- **Touch-Friendly**: Large buttons and touch targets
-- **Adaptive Layout**: Charts resize for small screens
-
-### **Performance**
-- **Fast Loading**: Optimized for mobile networks
-- **Efficient Charts**: Responsive Plotly visualizations
-- **Caching**: Smart data caching for better performance
-
-## 🚀 Next Steps
-
-### **Immediate Actions**
-1. ✅ Deploy to Streamlit Community Cloud
-2. ✅ Test all dashboard features
-3. ✅ Share the app URL with stakeholders
-4. ✅ Monitor performance and usage
-
-### **Future Enhancements**
-1. **Real Data Integration**: Connect to your actual lab systems
-2. **Advanced Analytics**: Add machine learning insights
-3. **Team Collaboration**: Implement user roles and permissions
-4. **API Integration**: Connect to external data sources
-
-### **Scaling Considerations**
-1. **Performance**: Monitor app response times
-2. **Data Volume**: Handle larger datasets efficiently
-3. **User Load**: Support multiple concurrent users
-4. **Cost Optimization**: Monitor Streamlit Cloud usage
-
-## 📞 Support
-
-### **Streamlit Community Cloud**
-- [Documentation](https://docs.streamlit.io/streamlit-community-cloud)
-- [Community Forum](https://discuss.streamlit.io/)
-- [GitHub Issues](https://github.com/streamlit/streamlit/issues)
-
-### **LabOps Metrics Starter Kit**
-- [Repository](https://github.com/TonyStarkWiz/labops-metrics-starter-kit)
-- [Issues](https://github.com/TonyStarkWiz/labops-metrics-starter-kit/issues)
-- [Documentation](https://github.com/TonyStarkWiz/labops-metrics-starter-kit/tree/main/docs)
+1. Check the build logs in Streamlit Cloud
+2. Verify your local setup works
+3. Review the error messages for specific issues
+4. Check that all dependencies are compatible
 
 ---
 
-**🎉 Congratulations!** Your LabOps Metrics Starter Kit is now deployed on Streamlit Community Cloud and ready to transform your laboratory operations monitoring.
-
-**App URL**: `https://labops-metrics-starter-kit.streamlit.app`
-**Repository**: `https://github.com/TonyStarkWiz/labops-metrics-starter-kit`
+**🎉 Congratulations!** Your LabOps Metrics Starter Kit is now deployed and accessible to users worldwide through Streamlit Cloud.

@@ -7,11 +7,16 @@ font = "sans serif"
 
 [server]
 headless = true
-enableCORS = false
+enableCORS = true
 enableXsrfProtection = false
+maxUploadSize = 200
+fileWatcherType = "none"
 
 [browser]
 gatherUsageStats = false
 
 [global]
 developmentMode = false
+
+[client]
+showErrorDetails = false
