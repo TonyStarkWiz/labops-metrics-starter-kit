@@ -1,0 +1,17 @@
+{
+  "yesterday": [
+    "Completed COVID-19 testing for 200 specimens",
+    "Resolved 3 machine calibration issues",
+    "Updated SOP documentation for new assay protocols"
+  ],
+  "today": [
+    "Process 150 COVID-19 specimens",
+    "Perform quality control checks on MACH001",
+    "Review and update safety protocols"
+  ],
+  "blockers": [
+    "Waiting for reagent shipment (ETA: 2 days)",
+    "Need IT support for database connectivity issue"
+  ],
+  "notes": "Team meeting scheduled for 3 PM to discuss new workflow optimization"
+}

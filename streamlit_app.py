@@ -86,14 +86,20 @@ def run_dq_validation(csv_data: str, rules_data: str, use_sample_rules: bool = F
     try:
         # For deployment, we'll simulate the validation since we can't run FastAPI locally
         if use_sample_rules:
-            # Simulate validation with sample rules
-            df = pd.read_csv(io.StringIO(csv_data))
+            # Simulate validation with sample rules - use more robust CSV parsing
+            df = pd.read_csv(
+                io.StringIO(csv_data),
+                parse_dates=False,  # Don't auto-parse dates to avoid pyarrow issues
+                infer_datetime_format=False,
+                keep_default_na=True,
+                na_values=['', 'nan', 'NaN', 'NULL', 'null']
+            )
             
             # Basic validation rules
             violations = []
             
-            # Check for required columns
-            required_cols = ['id', 'name', 'date']
+            # Check for required columns (adapted to our actual CSV structure)
+            required_cols = ['specimen_id', 'patient_id', 'assay', 'collection_date', 'received_date', 'status']
             missing_cols = [col for col in required_cols if col not in df.columns]
             if missing_cols:
                 violations.append({
@@ -120,10 +126,64 @@ def run_dq_validation(csv_data: str, rules_data: str, use_sample_rules: bool = F
                         "expected": "No missing values"
                     })
             
+            # Check for data type issues in numeric columns
+            if 'tat_minutes' in df.columns:
+                try:
+                    # Convert to numeric, coercing errors to NaN
+                    df['tat_minutes'] = pd.to_numeric(df['tat_minutes'], errors='coerce')
+                    invalid_tat = df['tat_minutes'].isnull().sum()
+                    if invalid_tat > 0:
+                        violations.append({
+                            "rule_name": "Data Type Validation",
+                            "description": f"Column 'tat_minutes' has {invalid_tat} non-numeric values",
+                            "severity": "ERROR",
+                            "row_indices": df[df['tat_minutes'].isnull()].index.tolist(),
+                            "column": "tat_minutes",
+                            "value": None,
+                            "expected": "Numeric values only"
+                        })
+                except Exception as e:
+                    violations.append({
+                        "rule_name": "Data Type Validation",
+                        "description": f"Error validating tat_minutes column: {str(e)}",
+                        "severity": "ERROR",
+                        "row_indices": [],
+                        "column": "tat_minutes",
+                        "value": None,
+                        "expected": "Numeric values only"
+                    })
+            
+            # Check for invalid date formats
+            if 'collection_date' in df.columns:
+                try:
+                    # Try to parse dates, but be lenient
+                    df['collection_date_parsed'] = pd.to_datetime(df['collection_date'], errors='coerce')
+                    invalid_dates = df['collection_date_parsed'].isnull().sum()
+                    if invalid_dates > 0:
+                        violations.append({
+                            "rule_name": "Date Format Validation",
+                            "description": f"Column 'collection_date' has {invalid_dates} invalid date formats",
+                            "severity": "ERROR",
+                            "row_indices": df[df['collection_date_parsed'].isnull()].index.tolist(),
+                            "column": "collection_date",
+                            "value": df[df['collection_date_parsed'].isnull()]['collection_date'].tolist(),
+                            "expected": "Valid date format (YYYY-MM-DD)"
+                        })
+                except Exception as e:
+                    violations.append({
+                        "rule_name": "Date Format Validation",
+                        "description": f"Error validating collection_date column: {str(e)}",
+                        "severity": "ERROR",
+                        "row_indices": [],
+                        "column": "collection_date",
+                        "value": None,
+                        "expected": "Valid date format (YYYY-MM-DD)"
+                        })
+            
             return {
                 "status": "success",
                 "data_shape": df.shape,
-                "rules_applied": 3,
+                "rules_applied": 5,  # Updated count
                 "violations_count": len(violations),
                 "violations": violations,
                 "summary": {
@@ -135,7 +195,13 @@ def run_dq_validation(csv_data: str, rules_data: str, use_sample_rules: bool = F
             }
         else:
             # Use custom rules if provided
-            df = pd.read_csv(io.StringIO(csv_data))
+            df = pd.read_csv(
+                io.StringIO(csv_data),
+                parse_dates=False,
+                infer_datetime_format=False,
+                keep_default_na=True,
+                na_values=['', 'nan', 'NaN', 'NULL', 'null']
+            )
             rules = yaml.safe_load(rules_data) if rules_data else {}
             
             violations = []
