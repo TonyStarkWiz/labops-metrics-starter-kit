@@ -102,7 +102,7 @@ The dashboard includes a "Trigger Teams Alert (Dry-Run)" button that:
 ## 🧪 Test Data
 
 ### Interactive Demo Testing
-For testing the interactive features, use the provided test data file:
+For testing the interactive features, use the provided test data files:
 
 **[`test_lab_data.csv`](test_lab_data.csv)** - Comprehensive lab data with intentional data quality issues
 - **50 specimen records** across 5 days (Jan 15-19, 2024)
@@ -112,6 +112,15 @@ For testing the interactive features, use the provided test data file:
   - Missing result values (6 records)
   - Mixed data types in result_value column
   - Various TAT ranges (1.4 to 72.0 hours)
+
+**[`extreme_outliers_test_data.csv`](extreme_outliers_test_data.csv)** - Extreme outliers and edge cases for testing interface robustness
+- **50 specimen records** with intentionally extreme values
+- **Extreme TAT values**: From 0.0000001 to 123,456,789.01 hours
+- **Negative values**: -5.2 hours TAT
+- **Invalid dates**: 20244-01-16 (typo)
+- **Extreme quality scores**: From 3 to 96
+- **Mixed data types**: Numbers, text, and error values
+- **Perfect for testing**: Chart scaling, data validation, outlier detection, and interface handling of extreme cases
 
 ### How to Use Test Data
 1. **Download** `test_lab_data.csv` from the repository
