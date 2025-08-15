@@ -24,6 +24,10 @@ import io
 import base64
 import requests
 from typing import Dict, List, Any, Optional
+import openpyxl
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill, Alignment
+from openpyxl.utils.dataframe import dataframe_to_rows
 
 # Page configuration
 st.set_page_config(
@@ -479,6 +483,202 @@ def run_enhanced_dq_validation(df: pd.DataFrame, rules: List[Dict[str, Any]]) ->
             "error": str(e)
         }
 
+# ============================================================================
+# POWERBI EXPORT FUNCTIONS
+# ============================================================================
+
+def create_powerbi_optimized_data(df: pd.DataFrame, validation_results: Dict = None) -> pd.DataFrame:
+    """Create PowerBI-optimized data format with calculated measures."""
+    try:
+        # Create a copy for PowerBI optimization
+        pbi_df = df.copy()
+        
+        # Add calculated measures for PowerBI
+        if 'tat_hours' in pbi_df.columns:
+            # TAT categories for PowerBI slicers
+            pbi_df['TAT_Category'] = pd.cut(
+                pd.to_numeric(pbi_df['tat_hours'], errors='coerce'),
+                bins=[0, 2, 4, 8, 24, 72, float('inf')],
+                labels=['0-2h', '2-4h', '4-8h', '8-24h', '24-72h', '72h+'],
+                include_lowest=True
+            )
+            
+            # TAT performance indicators
+            pbi_df['TAT_Performance'] = pd.cut(
+                pd.to_numeric(pbi_df['tat_hours'], errors='coerce'),
+                bins=[0, 4, 8, float('inf')],
+                labels=['Excellent', 'Good', 'Needs Improvement'],
+                include_lowest=True
+            )
+        
+        # Add date dimensions for PowerBI
+        if 'collection_date' in pbi_df.columns:
+            pbi_df['collection_date'] = pd.to_datetime(pbi_df['collection_date'], errors='coerce')
+            pbi_df['Year'] = pbi_df['collection_date'].dt.year
+            pbi_df['Month'] = pbi_df['collection_date'].dt.month
+            pbi_df['Month_Name'] = pbi_df['collection_date'].dt.strftime('%B')
+            pbi_df['Day_of_Week'] = pbi_df['collection_date'].dt.day_name()
+            pbi_df['Quarter'] = pbi_df['collection_date'].dt.quarter
+        
+        # Add quality indicators
+        if validation_results and validation_results.get('violations_count', 0) > 0:
+            pbi_df['Data_Quality_Score'] = 100 - (validation_results['violations_count'] / len(df) * 100)
+        else:
+            pbi_df['Data_Quality_Score'] = 100
+        
+        # Add calculated columns for PowerBI measures
+        pbi_df['Record_Count'] = 1
+        pbi_df['Is_Error'] = (pbi_df['status'] == 'ERROR').astype(int)
+        pbi_df['Is_Completed'] = (pbi_df['status'] == 'Completed').astype(int)
+        
+        return pbi_df
+        
+    except Exception as e:
+        st.error(f"Error creating PowerBI data: {str(e)}")
+        return df
+
+def export_to_powerbi_csv(df: pd.DataFrame, filename: str = "powerbi_export.csv") -> str:
+    """Export data to PowerBI-optimized CSV format."""
+    try:
+        # Create PowerBI-optimized data
+        pbi_df = create_powerbi_optimized_data(df)
+        
+        # Generate CSV content
+        csv_buffer = io.StringIO()
+        pbi_df.to_csv(csv_buffer, index=False)
+        csv_content = csv_buffer.getvalue()
+        
+        return csv_content
+        
+    except Exception as e:
+        st.error(f"Error exporting to PowerBI CSV: {str(e)}")
+        return ""
+
+def export_to_powerbi_excel(df: pd.DataFrame, validation_results: Dict = None, filename: str = "powerbi_export.xlsx") -> bytes:
+    """Export data to PowerBI-optimized Excel format with multiple sheets."""
+    try:
+        # Create PowerBI-optimized data
+        pbi_df = create_powerbi_optimized_data(df, validation_results)
+        
+        # Create Excel workbook
+        wb = Workbook()
+        
+        # Main data sheet
+        ws_data = wb.active
+        ws_data.title = "Laboratory_Data"
+        
+        # Add data
+        for r in dataframe_to_rows(pbi_df, index=False, header=True):
+            ws_data.append(r)
+        
+        # Style the header
+        header_font = Font(bold=True, color="FFFFFF")
+        header_fill = PatternFill(start_color="366092", end_color="366092", fill_type="solid")
+        header_alignment = Alignment(horizontal="center", vertical="center")
+        
+        for cell in ws_data[1]:
+            cell.font = header_font
+            cell.fill = header_fill
+            cell.alignment = header_alignment
+        
+        # Auto-adjust column widths
+        for column in ws_data.columns:
+            max_length = 0
+            column_letter = column[0].column_letter
+            for cell in column:
+                try:
+                    if len(str(cell.value)) > max_length:
+                        max_length = len(str(cell.value))
+                except:
+                    pass
+            adjusted_width = min(max_length + 2, 50)
+            ws_data.column_dimensions[column_letter].width = adjusted_width
+        
+        # Add validation results sheet if available
+        if validation_results:
+            ws_validation = wb.create_sheet("Validation_Results")
+            ws_validation.append(["Validation Summary"])
+            ws_validation.append(["Total Records", validation_results.get('data_shape', [0, 0])[0]])
+            ws_validation.append(["Total Columns", validation_results.get('data_shape', [0, 0])[1]])
+            ws_validation.append(["Rules Applied", validation_results.get('rules_applied', 0)])
+            ws_validation.append(["Violations Found", validation_results.get('violations_count', 0)])
+            ws_validation.append(["Data Quality Score", f"{100 - (validation_results.get('violations_count', 0) / validation_results.get('data_shape', [1, 1])[0] * 100):.1f}%"])
+            
+            # Style validation sheet
+            for row in ws_validation.iter_rows(min_row=1, max_row=6):
+                for cell in row:
+                    if cell.row == 1:
+                        cell.font = Font(bold=True, size=14)
+                    else:
+                        cell.font = Font(bold=True)
+        
+        # Add PowerBI measures sheet
+        ws_measures = wb.create_sheet("PowerBI_Measures")
+        ws_measures.append(["PowerBI DAX Measures"])
+        ws_measures.append([])
+        ws_measures.append(["Measure Name", "DAX Formula", "Description"])
+        ws_measures.append(["Total Records", "COUNTROWS(Laboratory_Data)", "Total number of laboratory records"])
+        ws_measures.append(["Error Rate", "DIVIDE(COUNTROWS(FILTER(Laboratory_Data, Laboratory_Data[Is_Error] = 1)), COUNTROWS(Laboratory_Data), 0)", "Percentage of records with errors"])
+        ws_measures.append(["Completion Rate", "DIVIDE(COUNTROWS(FILTER(Laboratory_Data, Laboratory_Data[Is_Completed] = 1)), COUNTROWS(Laboratory_Data), 0)", "Percentage of completed records"])
+        ws_measures.append(["Avg TAT Hours", "AVERAGE(Laboratory_Data[tat_hours])", "Average turnaround time in hours"])
+        ws_measures.append(["Data Quality Score", "AVERAGE(Laboratory_Data[Data_Quality_Score])", "Overall data quality score"])
+        
+        # Style measures sheet
+        for row in ws_measures.iter_rows(min_row=1, max_row=7):
+            for cell in row:
+                if cell.row == 1:
+                    cell.font = Font(bold=True, size=14)
+                elif cell.row == 3:
+                    cell.font = Font(bold=True)
+                    cell.fill = PatternFill(start_color="D9E1F2", end_color="D9E1F2", fill_type="solid")
+        
+        # Save to bytes
+        excel_buffer = io.BytesIO()
+        wb.save(excel_buffer)
+        excel_buffer.seek(0)
+        
+        return excel_buffer.getvalue()
+        
+    except Exception as e:
+        st.error(f"Error exporting to PowerBI Excel: {str(e)}")
+        return b""
+
+def create_powerbi_connection_string() -> str:
+    """Generate PowerBI connection string template."""
+    connection_template = """
+PowerBI Connection Guide:
+========================
+
+1. Import Data in PowerBI:
+   - Get Data → Text/CSV → Select your exported file
+
+2. Data Source Settings:
+   - File Path: [Your exported file location]
+   - First Row as Headers: ✓
+   - Data Type Detection: ✓
+
+3. PowerBI Data Model:
+   - Create relationships between tables
+   - Use calculated columns for TAT categories
+   - Implement DAX measures for KPIs
+
+4. Recommended Visualizations:
+   - TAT Performance by Department (Matrix)
+   - Error Rate Trends (Line Chart)
+   - Data Quality Score (Gauge)
+   - Specimen Volume by Month (Column Chart)
+   - Department Performance (Bar Chart)
+
+5. DAX Measures to Add:
+   - Total Records = COUNTROWS(Laboratory_Data)
+   - Error Rate = DIVIDE(COUNTROWS(FILTER(Laboratory_Data, Laboratory_Data[Is_Error] = 1)), COUNTROWS(Laboratory_Data), 0)
+   - Avg TAT = AVERAGE(Laboratory_Data[tat_hours])
+   - Quality Score = AVERAGE(Laboratory_Data[Data_Quality_Score])
+"""
+    return connection_template
+
+# ============================================================================
+
 def create_dq_dashboard():
     """Create the enhanced Data Quality Rules Engine dashboard tab."""
     st.header("🔍 Data Quality Rules Engine")
@@ -767,6 +967,62 @@ def create_dq_dashboard():
                         st.plotly_chart(fig, use_container_width=True)
                     else:
                         st.success("🎉 All data quality checks passed!")
+                    
+                    # PowerBI Export Section
+                    st.subheader("🚀 PowerBI Export")
+                    st.markdown("Export your validated data to PowerBI for advanced analytics and reporting")
+                    
+                    # Export buttons in columns
+                    export_col1, export_col2, export_col3 = st.columns(3)
+                    
+                    with export_col1:
+                        # CSV Export
+                        csv_content = export_to_powerbi_csv(df)
+                        if csv_content:
+                            st.download_button(
+                                label="📊 Export to PowerBI CSV",
+                                data=csv_content,
+                                file_name="labops_powerbi_export.csv",
+                                mime="text/csv",
+                                help="Download CSV file optimized for PowerBI import"
+                            )
+                    
+                    with export_col2:
+                        # Excel Export
+                        excel_content = export_to_powerbi_excel(df, result)
+                        if excel_content:
+                            st.download_button(
+                                label="📈 Export to PowerBI Excel",
+                                data=excel_content,
+                                file_name="labops_powerbi_export.xlsx",
+                                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                                help="Download Excel file with multiple sheets for PowerBI"
+                            )
+                    
+                    with export_col3:
+                        # PowerBI Connection Guide
+                        if st.button("🔗 PowerBI Connection Guide", type="secondary"):
+                            connection_guide = create_powerbi_connection_string()
+                            st.code(connection_guide, language="text")
+                    
+                    # PowerBI Features Preview
+                    with st.expander("🔍 PowerBI Features Preview"):
+                        st.markdown("""
+                        **Your exported data will include:**
+                        
+                        ✅ **TAT Categories**: 0-2h, 2-4h, 4-8h, 8-24h, 24-72h, 72h+
+                        ✅ **Performance Indicators**: Excellent, Good, Needs Improvement
+                        ✅ **Date Dimensions**: Year, Month, Quarter, Day of Week
+                        ✅ **Quality Metrics**: Data Quality Score, Error Indicators
+                        ✅ **Calculated Measures**: Ready-to-use DAX formulas
+                        ✅ **Multiple Sheets**: Data, Validation Results, PowerBI Measures
+                        """)
+                        
+                        # Show sample PowerBI data
+                        if st.button("👀 Preview PowerBI Data Structure"):
+                            pbi_preview = create_powerbi_optimized_data(df, result)
+                            st.write("**PowerBI-Optimized Data Preview:**")
+                            st.dataframe(pbi_preview.head(), use_container_width=True)
                     
                     # Summary report
                     with st.expander("📋 Detailed Summary"):
@@ -1372,6 +1628,63 @@ def create_metrics_dashboard():
         st.subheader("📋 Raw Data")
         st.dataframe(filtered_df, use_container_width=True)
         
+        # PowerBI Export Section for Dashboard
+        st.subheader("🚀 PowerBI Export")
+        st.markdown("Export your dashboard data to PowerBI for advanced analytics and reporting")
+        
+        # Export buttons in columns
+        export_col1, export_col2, export_col3 = st.columns(3)
+        
+        with export_col1:
+            # CSV Export
+            csv_content = export_to_powerbi_csv(filtered_df)
+            if csv_content:
+                st.download_button(
+                    label="📊 Export to PowerBI CSV",
+                    data=csv_content,
+                    file_name="labops_dashboard_powerbi_export.csv",
+                    mime="text/csv",
+                    help="Download CSV file optimized for PowerBI import"
+                )
+        
+        with export_col2:
+            # Excel Export
+            excel_content = export_to_powerbi_excel(filtered_df)
+            if excel_content:
+                st.download_button(
+                    label="📈 Export to PowerBI Excel",
+                    data=excel_content,
+                    file_name="labops_dashboard_powerbi_export.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    help="Download Excel file with multiple sheets for PowerBI"
+                )
+        
+        with export_col3:
+            # PowerBI Connection Guide
+            if st.button("🔗 PowerBI Connection Guide", key="dashboard_pbi_guide"):
+                connection_guide = create_powerbi_connection_string()
+                st.code(connection_guide, language="text")
+        
+        # PowerBI Features Preview
+        with st.expander("🔍 PowerBI Features Preview"):
+            st.markdown("""
+            **Your exported dashboard data will include:**
+            
+            ✅ **TAT Categories**: 0-2h, 2-4h, 4-8h, 8-24h, 24-72h, 72h+
+            ✅ **Performance Indicators**: Excellent, Good, Needs Improvement
+            ✅ **Date Dimensions**: Year, Month, Quarter, Day of Week
+            ✅ **Quality Metrics**: Data Quality Score, Error Indicators
+            ✅ **Calculated Measures**: Ready-to-use DAX formulas
+            ✅ **Multiple Sheets**: Data, Validation Results, PowerBI Measures
+            ✅ **Filtered Data**: Based on your current dashboard selections
+            """)
+            
+            # Show sample PowerBI data
+            if st.button("👀 Preview PowerBI Data Structure", key="dashboard_pbi_preview"):
+                pbi_preview = create_powerbi_optimized_data(filtered_df)
+                st.write("**PowerBI-Optimized Dashboard Data Preview:**")
+                st.dataframe(pbi_preview.head(), use_container_width=True)
+        
     else:
         st.info("No data available for the selected filters. Try adjusting the date range or filters.")
     
@@ -1383,6 +1696,7 @@ def create_metrics_dashboard():
         - Data refreshes automatically every 5 minutes
         - Sample data is generated if no database is found
         - Use sidebar filters to customize the view
+        - Export to PowerBI for advanced analytics
         """
     )
 
