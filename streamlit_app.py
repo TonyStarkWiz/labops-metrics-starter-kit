@@ -246,67 +246,494 @@ def run_dq_validation(csv_data: str, rules_data: str, use_sample_rules: bool = F
             "timestamp": datetime.now().isoformat()
         }
 
-def create_dq_dashboard():
-    """Create the Data Quality Rules Engine dashboard tab."""
-    st.header("🔍 Data Quality Rules Engine")
-    st.markdown("Validate your CSV data against configurable quality rules")
-    
-    # File upload section
-    st.subheader("📁 Upload Data")
-    uploaded_file = st.file_uploader(
-        "Choose a CSV file",
-        type=['csv'],
-        help="Upload a CSV file to validate against data quality rules"
-    )
-    
-    # Rules selection
-    st.subheader("📋 Rules Configuration")
-    rule_option = st.radio(
-        "Choose rules source:",
-        ["Use Sample Rules", "Upload Custom Rules", "Enter Rules Manually"],
-        help="Select how you want to configure the validation rules"
-    )
-    
-    rules_data = None
-    
-    if rule_option == "Use Sample Rules":
-        st.info("Using built-in sample rules for common data quality checks")
-        with open("sample_dq_rules.yaml", "r") as f:
-            rules_data = f.read()
-        st.code(rules_data, language="yaml")
+def run_enhanced_dq_validation(df: pd.DataFrame, rules: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """Enhanced data quality validation with dynamic rule processing."""
+    try:
+        violations = []
+        rules_applied = len(rules)
         
-    elif rule_option == "Upload Custom Rules":
-        rules_file = st.file_uploader(
-            "Upload YAML rules file",
-            type=['yaml', 'yml'],
-            help="Upload a YAML file containing your custom data quality rules"
-        )
-        if rules_file:
-            rules_data = rules_file.read().decode()
-            st.code(rules_data, language="yaml")
+        for rule in rules:
+            rule_type = rule.get('type', '')
             
-    elif rule_option == "Enter Rules Manually":
-        rules_text = st.text_area(
-            "Enter YAML rules:",
-            height=200,
-            help="Enter your custom data quality rules in YAML format"
-        )
-        if rules_text:
-            rules_data = rules_text
-    
-    # Validation button
-    if uploaded_file and (rule_option == "Use Sample Rules" or rules_data):
-        if st.button("🔍 Run Validation", type="primary"):
-            with st.spinner("Running data quality validation..."):
-                # Read CSV data
-                csv_content = uploaded_file.read().decode()
+            if rule_type == 'required_columns':
+                # Check for required columns
+                required_cols = rule.get('columns', [])
+                missing_cols = [col for col in required_cols if col not in df.columns]
+                if missing_cols:
+                    violations.append({
+                        "rule_name": rule.get('name', 'Required Columns'),
+                        "description": f"Missing required columns: {missing_cols}",
+                        "severity": "ERROR",
+                        "row_indices": [],
+                        "column": "N/A",
+                        "value": None,
+                        "expected": required_cols
+                    })
+            
+            elif rule_type == 'data_type':
+                # Check data types
+                type_rules = rule.get('rules', {})
+                for col, expected_type in type_rules.items():
+                    if col in df.columns:
+                        if expected_type == 'number':
+                            # Check if column is numeric
+                            try:
+                                pd.to_numeric(df[col], errors='coerce')
+                                invalid_count = df[col].isna().sum()
+                                if invalid_count > 0:
+                                    violations.append({
+                                        "rule_name": rule.get('name', 'Data Type Validation'),
+                                        "description": f"Column '{col}' has {invalid_count} non-numeric values",
+                                        "severity": "ERROR",
+                                        "row_indices": df[df[col].isna()].index.tolist(),
+                                        "column": col,
+                                        "value": None,
+                                        "expected": "Numeric values only"
+                                    })
+                            except:
+                                violations.append({
+                                    "rule_name": rule.get('name', 'Data Type Validation'),
+                                    "description": f"Column '{col}' cannot be converted to numeric",
+                                    "severity": "ERROR",
+                                    "row_indices": [],
+                                    "column": col,
+                                    "value": None,
+                                    "expected": "Numeric values only"
+                                })
+                        elif expected_type == 'string':
+                            # Check for string columns (usually no validation needed)
+                            pass
+            
+            elif rule_type == 'range':
+                # Check value ranges
+                range_rules = rule.get('rules', {})
+                for col, range_config in range_rules.items():
+                    if col in df.columns:
+                        try:
+                            numeric_col = pd.to_numeric(df[col], errors='coerce')
+                            min_val = range_config.get('min')
+                            max_val = range_config.get('max')
+                            
+                            if min_val is not None:
+                                below_min = numeric_col < min_val
+                                if below_min.any():
+                                    violations.append({
+                                        "rule_name": rule.get('name', 'Range Validation'),
+                                        "description": f"Column '{col}' has values below minimum {min_val}",
+                                        "severity": "ERROR",
+                                        "row_indices": df[below_min].index.tolist(),
+                                        "column": col,
+                                        "value": df[below_min][col].tolist(),
+                                        "expected": f"Values >= {min_val}"
+                                    })
+                            
+                            if max_val is not None:
+                                above_max = numeric_col > max_val
+                                if above_max.any():
+                                    violations.append({
+                                        "rule_name": rule.get('name', 'Range Validation'),
+                                        "description": f"Column '{col}' has values above maximum {max_val}",
+                                        "severity": "ERROR",
+                                        "row_indices": df[above_max].index.tolist(),
+                                        "column": col,
+                                        "value": df[above_max][col].tolist(),
+                                        "expected": f"Values <= {max_val}"
+                                    })
+                        except Exception as e:
+                            violations.append({
+                                "rule_name": rule.get('name', 'Range Validation'),
+                                "description": f"Error validating range for column '{col}': {str(e)}",
+                                "severity": "ERROR",
+                                "row_indices": [],
+                                "column": col,
+                                "value": None,
+                                "expected": "Numeric values for range validation"
+                            })
+            
+            elif rule_type == 'completeness':
+                # Check for missing values
+                required_cols = rule.get('columns', [])
+                for col in required_cols:
+                    if col in df.columns:
+                        missing_count = df[col].isnull().sum()
+                        if missing_count > 0:
+                            violations.append({
+                                "rule_name": rule.get('name', 'Completeness Check'),
+                                "description": f"Column '{col}' has {missing_count} missing values",
+                                "severity": "WARNING",
+                                "row_indices": df[df[col].isnull()].index.tolist(),
+                                "column": col,
+                                "value": None,
+                                "expected": "No missing values"
+                            })
+            
+            elif rule_type == 'custom_range':
+                # Custom range validation
+                col = rule.get('column')
+                min_val = rule.get('min')
+                max_val = rule.get('max')
                 
-                # Run validation
-                result = run_dq_validation(
-                    csv_content, 
-                    rules_data, 
-                    use_sample_rules=(rule_option == "Use Sample Rules")
-                )
+                if col in df.columns and min_val is not None and max_val is not None:
+                    try:
+                        numeric_col = pd.to_numeric(df[col], errors='coerce')
+                        out_of_range = (numeric_col < min_val) | (numeric_col > max_val)
+                        
+                        if out_of_range.any():
+                            violations.append({
+                                "rule_name": rule.get('name', 'Custom Range Validation'),
+                                "description": f"Column '{col}' has values outside range [{min_val}, {max_val}]",
+                                "severity": "ERROR",
+                                "row_indices": df[out_of_range].index.tolist(),
+                                "column": col,
+                                "value": df[out_of_range][col].tolist(),
+                                "expected": f"Values between {min_val} and {max_val}"
+                            })
+                    except Exception as e:
+                        violations.append({
+                            "rule_name": rule.get('name', 'Custom Range Validation'),
+                            "description": f"Error validating custom range for column '{col}': {str(e)}",
+                            "severity": "ERROR",
+                            "row_indices": [],
+                            "column": col,
+                            "value": None,
+                            "expected": "Numeric values for range validation"
+                        })
+            
+            elif rule_type == 'custom_completeness':
+                # Custom completeness validation
+                required_cols = rule.get('columns', [])
+                for col in required_cols:
+                    if col in df.columns:
+                        missing_count = df[col].isnull().sum()
+                        if missing_count > 0:
+                            violations.append({
+                                "rule_name": rule.get('name', 'Custom Completeness Check'),
+                                "description": f"Column '{col}' has {missing_count} missing values",
+                                "severity": "WARNING",
+                                "row_indices": df[df[col].isnull()].index.tolist(),
+                                "column": col,
+                                "value": None,
+                                "expected": "No missing values"
+                            })
+            
+            elif rule_type == 'custom_format':
+                # Custom format validation
+                col = rule.get('column')
+                expected_format = rule.get('format')
+                
+                if col in df.columns and expected_format:
+                    try:
+                        if expected_format == 'email':
+                            # Basic email validation
+                            import re
+                            email_pattern = r'^[^\s@]+@[^\s@]+\.[^\s@]+$'
+                            invalid_emails = ~df[col].astype(str).str.match(email_pattern, na=False)
+                        elif expected_format == 'date':
+                            # Date format validation
+                            invalid_dates = pd.to_datetime(df[col], errors='coerce').isna()
+                        elif expected_format == 'numeric':
+                            # Numeric validation
+                            invalid_numeric = pd.to_numeric(df[col], errors='coerce').isna()
+                        else:
+                            # Skip other formats for now
+                            continue
+                        
+                        if invalid_emails.any() if expected_format == 'email' else invalid_dates.any() if expected_format == 'date' else invalid_numeric.any():
+                            violations.append({
+                                "rule_name": rule.get('name', 'Custom Format Validation'),
+                                "description": f"Column '{col}' has invalid {expected_format} format",
+                                "severity": "WARNING",
+                                "row_indices": df[invalid_emails if expected_format == 'email' else invalid_dates if expected_format == 'date' else invalid_numeric].index.tolist(),
+                                "column": col,
+                                "value": None,
+                                "expected": f"Valid {expected_format} format"
+                            })
+                    except Exception as e:
+                        violations.append({
+                            "rule_name": rule.get('name', 'Custom Format Validation'),
+                            "description": f"Error validating format for column '{col}': {str(e)}",
+                            "severity": "ERROR",
+                            "row_indices": [],
+                            "column": col,
+                            "value": None,
+                            "expected": f"Valid {expected_format} format"
+                        })
+        
+        return {
+            "status": "success",
+            "data_shape": df.shape,
+            "rules_applied": rules_applied,
+            "violations_count": len(violations),
+            "violations": violations,
+            "summary": {
+                "total_records": len(df),
+                "total_columns": len(df.columns),
+                "validation_passed": len(violations) == 0
+            },
+            "timestamp": datetime.now().isoformat()
+        }
+        
+    except Exception as e:
+        return {
+            "status": "error",
+            "error": str(e)
+        }
+
+def create_dq_dashboard():
+    """Create the enhanced Data Quality Rules Engine dashboard tab."""
+    st.header("🔍 Data Quality Rules Engine")
+    st.markdown("Validate your CSV data against configurable quality rules with advanced rule management")
+    
+    # Initialize session state for rules
+    if 'current_rules' not in st.session_state:
+        st.session_state.current_rules = []
+    
+    # Create two columns for layout
+    col1, col2 = st.columns([1, 1])
+    
+    with col1:
+        st.subheader("📁 Upload Data")
+        uploaded_file = st.file_uploader(
+            "Choose a CSV file",
+            type=['csv'],
+            help="Upload a CSV file to validate against data quality rules"
+        )
+        
+        # Sample data option
+        if st.button("📊 Load Sample Lab Data", type="secondary"):
+            st.session_state.sample_data_loaded = True
+            st.success("Sample data loaded! Use the validation below.")
+        
+        # Data preview
+        if uploaded_file or st.session_state.get('sample_data_loaded', False):
+            st.subheader("📊 Data Preview")
+            if uploaded_file:
+                df = pd.read_csv(uploaded_file)
+                st.write(f"**Total Records:** {len(df)}")
+                st.write(f"**Columns:** {', '.join(df.columns)}")
+                st.dataframe(df.head(), use_container_width=True)
+            else:
+                # Show sample data
+                sample_data = [
+                    {'specimen_id': 'SP001', 'collection_date': '2024-01-15', 'test_type': 'CBC', 'department': 'Hematology', 'tat_hours': 2.1, 'status': 'Completed'},
+                    {'specimen_id': 'SP002', 'collection_date': '2024-01-15', 'test_type': 'Chemistry Panel', 'department': 'Chemistry', 'tat_hours': 1.8, 'status': 'Completed'},
+                    {'specimen_id': 'SP003', 'collection_date': '2024-01-15', 'test_type': 'Blood Culture', 'department': 'Microbiology', 'tat_hours': 48.0, 'status': 'In Progress'}
+                ]
+                df = pd.DataFrame(sample_data)
+                st.write(f"**Total Records:** {len(df)}")
+                st.write(f"**Columns:** {', '.join(df.columns)}")
+                st.dataframe(df, use_container_width=True)
+    
+    with col2:
+        st.subheader("⚙️ Rules Configuration")
+        
+        # Rule upload section
+        st.markdown("**📁 Upload Rules File**")
+        rules_file = st.file_uploader(
+            "Upload JSON or YAML rules file",
+            type=['json', 'yaml', 'yml'],
+            help="Upload a rules file or use the quick rule selection below"
+        )
+        
+        if rules_file:
+            try:
+                if rules_file.name.endswith('.json'):
+                    rules_data = json.loads(rules_file.read().decode())
+                else:
+                    rules_data = yaml.safe_load(rules_file.read().decode())
+                
+                if isinstance(rules_data, list):
+                    st.session_state.current_rules = rules_data
+                    st.success(f"✅ Successfully loaded {len(rules_data)} rules!")
+                else:
+                    st.error("Rules file should contain a list of rules")
+            except Exception as e:
+                st.error(f"Error parsing rules file: {str(e)}")
+        
+        # Download sample rules
+        if st.button("📥 Download Sample Rules", type="secondary"):
+            sample_rules = [
+                {
+                    "type": "required_columns",
+                    "name": "Required Columns",
+                    "description": "Ensures all mandatory columns are present",
+                    "columns": ["specimen_id", "collection_date", "test_type", "department"]
+                },
+                {
+                    "type": "data_type",
+                    "name": "Data Type Validation",
+                    "description": "Validates data types for each column",
+                    "rules": {
+                        "specimen_id": "string",
+                        "tat_hours": "number"
+                    }
+                },
+                {
+                    "type": "range",
+                    "name": "Range Validation",
+                    "description": "Checks values are within acceptable ranges",
+                    "rules": {
+                        "tat_hours": {"min": 0, "max": 72}
+                    }
+                }
+            ]
+            
+            # Create download button
+            json_str = json.dumps(sample_rules, indent=2)
+            st.download_button(
+                label="📥 Download sample_rules.json",
+                data=json_str,
+                file_name="sample_data_quality_rules.json",
+                mime="application/json"
+            )
+    
+    # Quick Rule Selection
+    st.subheader("✅ Quick Rule Selection")
+    rule_cols = st.columns(4)
+    
+    with rule_cols[0]:
+        if st.checkbox("Required Columns", key="rule_required"):
+            if not any(rule['type'] == 'required_columns' for rule in st.session_state.current_rules):
+                st.session_state.current_rules.append({
+                    "type": "required_columns",
+                    "name": "Required Columns",
+                    "description": "Ensures all mandatory columns are present",
+                    "columns": ["specimen_id", "collection_date", "test_type", "department"]
+                })
+        else:
+            st.session_state.current_rules = [rule for rule in st.session_state.current_rules if rule['type'] != 'required_columns']
+    
+    with rule_cols[1]:
+        if st.checkbox("Data Type Validation", key="rule_datatype"):
+            if not any(rule['type'] == 'data_type' for rule in st.session_state.current_rules):
+                st.session_state.current_rules.append({
+                    "type": "data_type",
+                    "name": "Data Type Validation",
+                    "description": "Validates data types for each column",
+                    "rules": {
+                        "specimen_id": "string",
+                        "tat_hours": "number"
+                    }
+                })
+        else:
+            st.session_state.current_rules = [rule for rule in st.session_state.current_rules if rule['type'] != 'data_type']
+    
+    with rule_cols[2]:
+        if st.checkbox("Range Validation", key="rule_range"):
+            if not any(rule['type'] == 'range' for rule in st.session_state.current_rules):
+                st.session_state.current_rules.append({
+                    "type": "range",
+                    "name": "Range Validation",
+                    "description": "Checks values are within acceptable ranges",
+                    "rules": {
+                        "tat_hours": {"min": 0, "max": 72}
+                    }
+                })
+        else:
+            st.session_state.current_rules = [rule for rule in st.session_state.current_rules if rule['type'] != 'range']
+    
+    with rule_cols[3]:
+        if st.checkbox("Completeness Check", key="rule_completeness"):
+            if not any(rule['type'] == 'completeness' for rule in st.session_state.current_rules):
+                st.session_state.current_rules.append({
+                    "type": "completeness",
+                    "name": "Completeness Check",
+                    "description": "Ensures no missing values in critical fields",
+                    "columns": ["specimen_id", "test_type", "department", "tat_hours"]
+                })
+        else:
+            st.session_state.current_rules = [rule for rule in st.session_state.current_rules if rule['type'] != 'completeness']
+    
+    # Custom Rule Builder
+    st.subheader("🔧 Custom Rule Builder")
+    custom_col1, custom_col2 = st.columns(2)
+    
+    with custom_col1:
+        custom_rule_type = st.selectbox(
+            "Rule Type",
+            ["custom_range", "custom_completeness", "custom_format"],
+            help="Select the type of custom rule to create"
+        )
+        
+        custom_column = st.text_input(
+            "Column Name",
+            placeholder="e.g., tat_hours",
+            help="Enter the column name to validate"
+        )
+    
+    with custom_col2:
+        if custom_rule_type == "custom_range":
+            custom_min = st.number_input("Minimum Value", value=0.0)
+            custom_max = st.number_input("Maximum Value", value=100.0)
+        elif custom_rule_type == "custom_completeness":
+            custom_columns = st.text_input(
+                "Required Columns (comma-separated)",
+                placeholder="specimen_id, test_type, department"
+            )
+        elif custom_rule_type == "custom_format":
+            custom_format = st.selectbox(
+                "Expected Format",
+                ["email", "phone", "date", "time", "numeric", "alphanumeric"]
+            )
+    
+    if st.button("➕ Add Custom Rule", type="secondary"):
+        if custom_column:
+            custom_rule = {
+                "type": custom_rule_type,
+                "name": f"Custom {custom_rule_type.replace('_', ' ').title()}: {custom_column}",
+                "description": f"Custom validation for {custom_column}",
+                "column": custom_column
+            }
+            
+            if custom_rule_type == "custom_range":
+                custom_rule.update({"min": custom_min, "max": custom_max})
+                custom_rule["description"] = f"Ensures {custom_column} is between {custom_min} and {custom_max}"
+            elif custom_rule_type == "custom_completeness":
+                columns_list = [col.strip() for col in custom_columns.split(',') if col.strip()]
+                custom_rule.update({"columns": columns_list})
+                custom_rule["description"] = f"Ensures no missing values in columns: {', '.join(columns_list)}"
+            elif custom_rule_type == "custom_format":
+                custom_rule.update({"format": custom_format})
+                custom_rule["description"] = f"Validates {custom_column} format: {custom_format}"
+            
+            st.session_state.current_rules.append(custom_rule)
+            st.success(f"✅ Custom rule added: {custom_rule['name']}")
+        else:
+            st.error("Please enter a column name")
+    
+    # Active Rules Display
+    st.subheader("📋 Active Validation Rules")
+    if st.session_state.current_rules:
+        for i, rule in enumerate(st.session_state.current_rules):
+            with st.expander(f"🔍 {rule['name']} ({rule['type']})"):
+                st.write(f"**Description:** {rule['description']}")
+                st.write(f"**Type:** {rule['type']}")
+                if st.button(f"🗑️ Remove Rule", key=f"remove_{i}"):
+                    st.session_state.current_rules.pop(i)
+                    st.rerun()
+    else:
+        st.info("No rules added yet. Use the quick selection above or create custom rules.")
+    
+    # Validation section
+    if (uploaded_file or st.session_state.get('sample_data_loaded', False)) and st.session_state.current_rules:
+        st.subheader("🚀 Run Validation")
+        
+        if st.button("🔍 Run Data Quality Validation", type="primary"):
+            with st.spinner("Running data quality validation..."):
+                # Prepare data for validation
+                if uploaded_file:
+                    csv_content = uploaded_file.read().decode()
+                    df = pd.read_csv(io.StringIO(csv_content))
+                else:
+                    # Use sample data
+                    df = pd.DataFrame([
+                        {'specimen_id': 'SP001', 'collection_date': '2024-01-15', 'test_type': 'CBC', 'department': 'Hematology', 'tat_hours': 2.1, 'status': 'Completed'},
+                        {'specimen_id': 'SP002', 'collection_date': '2024-01-15', 'test_type': 'Chemistry Panel', 'department': 'Chemistry', 'tat_hours': 1.8, 'status': 'Completed'},
+                        {'specimen_id': 'SP003', 'collection_date': '2024-01-15', 'test_type': 'Blood Culture', 'department': 'Microbiology', 'tat_hours': 48.0, 'status': 'In Progress'}
+                    ])
+                
+                # Run validation with current rules
+                result = run_enhanced_dq_validation(df, st.session_state.current_rules)
                 
                 # Display results
                 st.subheader("📊 Validation Results")
@@ -348,40 +775,49 @@ def create_dq_dashboard():
                 else:
                     st.error(f"❌ Validation failed: {result.get('error', 'Unknown error')}")
     
+    elif not st.session_state.current_rules:
+        st.info("ℹ️ Please add at least one validation rule to run validation.")
+    
     # Rule templates
-    with st.expander("📚 Rule Templates"):
+    with st.expander("📚 Rule Templates & Help"):
         st.markdown("""
-        ### Common Rule Types:
+        ### Enhanced Rule Types:
         
         **Required Columns:**
         ```yaml
-        - name: Required Columns Check
-          rule_type: required_columns
-          parameters:
-            columns: [id, name, date]
-          severity: ERROR
+        - type: required_columns
+          name: Required Columns
+          description: Ensures all mandatory columns are present
+          columns: [specimen_id, collection_date, test_type, department]
         ```
         
-        **Allowed Values:**
+        **Data Type Validation:**
         ```yaml
-        - name: Status Validation
-          rule_type: allowed_values
-          parameters:
-            column: status
-            allowed_values: [active, inactive, pending]
-          severity: ERROR
+        - type: data_type
+          name: Data Type Validation
+          description: Validates data types for each column
+          rules:
+            specimen_id: string
+            tat_hours: number
         ```
         
-        **Data Types:**
+        **Range Validation:**
         ```yaml
-        - name: Data Type Check
-          rule_type: data_types
-          parameters:
-            columns:
-              id: int
-              date: datetime
-              amount: float
-          severity: WARNING
+        - type: range
+          name: Range Validation
+          description: Checks values are within acceptable ranges
+          rules:
+            tat_hours: {min: 0, max: 72}
+        ```
+        
+        **Custom Rules:**
+        ```yaml
+        - type: custom_range
+          name: Custom TAT Range
+          description: Ensures TAT is within acceptable limits
+          column: tat_hours
+          min: 0
+          max: 24
         ```
         """)
 
