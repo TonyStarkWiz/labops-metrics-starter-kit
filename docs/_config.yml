@@ -1,5 +1,5 @@
 title: LabOps Metrics Starter Kit
-description: A comprehensive laboratory operations metrics and analytics platform
+description: A comprehensive laboratory operations metrics and analytics platform with Data Quality Rules Engine and Teams Stand-up Bot
 url: "https://TonyStarkWiz.github.io"
 baseurl: "/labops-metrics-starter-kit"
 
@@ -8,6 +8,7 @@ theme: jekyll-theme-cayman
 plugins:
   - jekyll-seo-tag
   - jekyll-sitemap
+  - jekyll-feed
 
 # SEO
 author:
@@ -20,6 +21,13 @@ social:
   links:
     - https://github.com/TonyStarkWiz/labops-metrics-starter-kit
 
+# GitHub Pages specific
+github:
+  is_project_page: true
+  repository_url: https://github.com/TonyStarkWiz/labops-metrics-starter-kit
+  zip_url: https://github.com/TonyStarkWiz/labops-metrics-starter-kit/archive/main.zip
+  clone_url: https://github.com/TonyStarkWiz/labops-metrics-starter-kit.git
+
 # Exclude from processing
 exclude:
   - Gemfile
@@ -29,3 +37,17 @@ exclude:
   - vendor/cache/
   - vendor/gems/
   - vendor/ruby/
+  - app/
+  - scripts/
+  - tests/
+  - data/
+  - .streamlit/
+  - *.py
+  - *.db
+  - *.csv
+  - *.json
+  - *.yaml
+  - *.toml
+  - *.md
+  - Makefile
+  - requirements.txt
