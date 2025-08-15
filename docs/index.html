@@ -498,6 +498,38 @@
             margin: 0 auto 1rem;
         }
 
+        /* Dashboard Actions */
+        .dashboard-actions {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .data-status {
+            padding: 0.5rem 1rem;
+            background: #f8f9fa;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            border: 1px solid #e9ecef;
+        }
+
+        #refreshChartsBtn {
+            background: #667eea;
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.3s;
+        }
+
+        #refreshChartsBtn:hover {
+            background: #5a6fd8;
+        }
+
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
@@ -549,25 +581,33 @@
         <div class="container">
             <!-- Dashboard Tab -->
             <div id="dashboard" class="tab-content active">
-                <h2 style="text-align: center; margin-bottom: 2rem; color: #333;">📊 LabOps Metrics Dashboard</h2>
+                <div style="text-align: center; margin-bottom: 2rem;">
+                    <h2 style="color: #333; margin-bottom: 1rem;">📊 LabOps Metrics Dashboard</h2>
+                    <div style="display: flex; justify-content: center; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                        <button class="btn btn-primary" onclick="updateDashboardCharts()" id="refreshChartsBtn">
+                            🔄 Refresh Charts
+                        </button>
+                        <span class="data-status" id="dataStatus" style="color: #666; font-style: italic;">No data loaded</span>
+                    </div>
+                </div>
                 
                 <!-- Key Metrics -->
                 <div class="dashboard-grid">
                     <div class="metric-card">
-                        <div class="metric-value" id="tat-value">2.4</div>
+                        <div class="metric-value" id="totalSpecimens">0</div>
+                        <div class="metric-label">Total Specimens</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" id="avgTAT">0 hrs</div>
                         <div class="metric-label">Avg TAT (Hours)</div>
                     </div>
                     <div class="metric-card">
-                        <div class="metric-value" id="throughput-value">156</div>
-                        <div class="metric-label">Specimens/Hour</div>
+                        <div class="metric-value" id="totalDepartments">0</div>
+                        <div class="metric-label">Departments</div>
                     </div>
                     <div class="metric-card">
-                        <div class="metric-value" id="error-rate-value">1.2%</div>
-                        <div class="metric-label">Error Rate</div>
-                    </div>
-                    <div class="metric-card">
-                        <div class="metric-value" id="sla-value">98.5%</div>
-                        <div class="metric-label">SLA Compliance</div>
+                        <div class="metric-value" id="dataQualityScore">0%</div>
+                        <div class="metric-label">Data Quality Score</div>
                     </div>
                 </div>
 
@@ -926,6 +966,150 @@
             });
         }
 
+        // Update dashboard charts with uploaded data
+        function updateDashboardCharts() {
+            if (!currentData || currentData.length === 0) {
+                showAlert('No data available to update charts', 'warning');
+                return;
+            }
+
+            try {
+                // Process the data for charts
+                const processedData = processDataForCharts(currentData);
+                
+                // Update TAT Chart
+                if (charts.tat) {
+                    charts.tat.data.labels = processedData.dates;
+                    charts.tat.data.datasets[0].data = processedData.avgTAT;
+                    charts.tat.update();
+                }
+
+                // Update Throughput Chart
+                if (charts.throughput) {
+                    charts.throughput.data.labels = processedData.dates;
+                    charts.throughput.data.datasets[0].data = processedData.throughput;
+                    charts.throughput.update();
+                }
+
+                // Update Error Chart
+                if (charts.error) {
+                    charts.error.data.labels = processedData.departments;
+                    charts.error.data.datasets[0].data = processedData.errorRates;
+                    charts.error.update();
+                }
+
+                showAlert('Dashboard charts updated with new data!', 'success');
+                
+                // Update summary metrics
+                updateSummaryMetrics(processedData);
+                
+            } catch (error) {
+                console.error('Error updating charts:', error);
+                showAlert('Error updating charts: ' + error.message, 'error');
+            }
+        }
+
+        // Process uploaded data for chart visualization
+        function processDataForCharts(data) {
+            // Skip header row if present
+            const cleanData = data.filter(row => 
+                row.specimen_id && 
+                row.specimen_id !== 'specimen_id' && 
+                typeof row.tat_hours === 'number' || !isNaN(parseFloat(row.tat_hours))
+            );
+
+            if (cleanData.length === 0) {
+                throw new Error('No valid data found for charting');
+            }
+
+            // Group by date
+            const dateGroups = {};
+            const departmentGroups = {};
+            
+            cleanData.forEach(row => {
+                const date = row.collection_date || 'Unknown';
+                const dept = row.department || 'Unknown';
+                const tat = parseFloat(row.tat_hours) || 0;
+                
+                if (!dateGroups[date]) {
+                    dateGroups[date] = { total: 0, count: 0, tatSum: 0 };
+                }
+                if (!departmentGroups[dept]) {
+                    departmentGroups[dept] = { count: 0, errors: 0 };
+                }
+                
+                dateGroups[date].total++;
+                dateGroups[date].tatSum += tat;
+                dateGroups[date].count++;
+                
+                departmentGroups[dept].count++;
+                if (row.status === 'Error' || row.status === 'Critical') {
+                    departmentGroups[dept].errors++;
+                }
+            });
+
+            // Calculate metrics
+            const dates = Object.keys(dateGroups).sort();
+            const avgTAT = dates.map(date => 
+                dateGroups[date].count > 0 ? 
+                (dateGroups[date].tatSum / dateGroups[date].count).toFixed(2) : 0
+            );
+            const throughput = dates.map(date => dateGroups[date].total);
+            
+            const departments = Object.keys(departmentGroups);
+            const errorRates = departments.map(dept => 
+                departmentGroups[dept].count > 0 ? 
+                (departmentGroups[dept].errors / departmentGroups[dept].count * 100).toFixed(1) : 0
+            );
+
+            return {
+                dates: dates,
+                avgTAT: avgTAT,
+                throughput: throughput,
+                departments: departments,
+                errorRates: errorRates
+            };
+        }
+
+        // Update summary metrics display
+        function updateSummaryMetrics(data) {
+            const totalSpecimens = data.throughput.reduce((sum, val) => sum + val, 0);
+            const avgTATOverall = data.avgTAT.reduce((sum, val) => sum + parseFloat(val), 0) / data.avgTAT.length;
+            
+            // Update the summary cards if they exist
+            const totalSpecimensEl = document.getElementById('totalSpecimens');
+            const avgTATEl = document.getElementById('avgTAT');
+            const totalDepartmentsEl = document.getElementById('totalDepartments');
+            const dataQualityScoreEl = document.getElementById('dataQualityScore');
+            
+            if (totalSpecimensEl) totalSpecimensEl.textContent = totalSpecimens;
+            if (avgTATEl) avgTATOverall > 0 ? avgTATEl.textContent = avgTATOverall.toFixed(2) + ' hrs' : avgTATEl.textContent = '0 hrs';
+            if (totalDepartmentsEl) totalDepartmentsEl.textContent = data.departments.length;
+            
+            // Calculate data quality score based on validation results
+            if (dataQualityScoreEl && currentData) {
+                const validRecords = currentData.filter(row => 
+                    row.specimen_id && 
+                    row.specimen_id !== 'specimen_id' && 
+                    row.collection_date && 
+                    row.test_type && 
+                    row.department
+                ).length;
+                const qualityScore = currentData.length > 1 ? Math.round((validRecords / (currentData.length - 1)) * 100) : 100;
+                dataQualityScoreEl.textContent = qualityScore + '%';
+            }
+        }
+
+        // Update data status display
+        function updateDataStatus(message) {
+            const dataStatusEl = document.getElementById('dataStatus');
+            if (dataStatusEl) {
+                dataStatusEl.textContent = message;
+                dataStatusEl.style.color = '#28a745';
+                dataStatusEl.style.fontStyle = 'normal';
+            }
+        }
+
         // Set current date in Teams Bot form
         function setCurrentDate() {
             const today = new Date().toISOString().split('T')[0];
@@ -943,7 +1127,10 @@
             ];
             
             currentData = sampleData;
+            updateDataStatus('Sample data loaded');
             showAlert('Sample data loaded successfully!', 'success');
+            // Update dashboard charts with sample data
+            updateDashboardCharts();
         }
 
         // Handle CSV file upload
@@ -954,7 +1141,10 @@
                     complete: function(results) {
                         if (results.data && results.data.length > 0) {
                             currentData = results.data;
+                            updateDataStatus(`CSV uploaded: ${results.data.length} records`);
                             showAlert('CSV file uploaded successfully!', 'success');
+                            // Update dashboard charts with new data
+                            updateDashboardCharts();
                         } else {
                             showAlert('Error parsing CSV file', 'error');
                         }
