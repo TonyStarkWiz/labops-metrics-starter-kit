@@ -253,6 +253,38 @@
             background: #f8fff9;
         }
 
+        .rule-checkbox {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .rule-checkbox:hover {
+            background: #e9ecef;
+            border-color: #667eea;
+        }
+
+        .rule-checkbox input[type="checkbox"] {
+            margin-top: 0.25rem;
+            transform: scale(1.2);
+            accent-color: #667eea;
+        }
+
+        .rule-checkbox label {
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .rule-checkbox.checked {
+            background: #e8f5e8;
+            border-color: #28a745;
+        }
+
         /* Teams Bot Section */
         .teams-container {
             background: white;
@@ -579,26 +611,78 @@
                     <!-- Rules Configuration Panel -->
                     <div class="dq-panel">
                         <h3>⚙️ Data Quality Rules</h3>
-                        <div class="rule-builder">
-                            <div class="rule-item">
-                                <h4>Required Columns</h4>
-                                <p>Ensures all mandatory columns are present</p>
-                                <button class="btn btn-primary" onclick="addRequiredColumnsRule()">Add Rule</button>
+                        
+                        <!-- Rule Upload Section -->
+                        <div style="margin-bottom: 2rem;">
+                            <h4 style="margin-bottom: 1rem; color: #333;">📁 Upload Rules File</h4>
+                            <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px;">
+                                <p style="margin-bottom: 1rem; color: #666; font-size: 0.9rem;">Upload a JSON or YAML file with your data quality rules</p>
+                                <input type="file" id="rulesFile" accept=".json,.yaml,.yml" style="margin-bottom: 1rem;">
+                                <button class="btn btn-secondary" onclick="uploadRulesFile()">📤 Upload Rules</button>
+                                <button class="btn btn-secondary" onclick="downloadSampleRules()" style="margin-left: 0.5rem;">📥 Download Sample</button>
                             </div>
-                            <div class="rule-item">
-                                <h4>Data Type Validation</h4>
-                                <p>Validates data types for each column</p>
-                                <button class="btn btn-primary" onclick="addDataTypeRule()">Add Rule</button>
+                        </div>
+
+                        <!-- Quick Rule Selection -->
+                        <div style="margin-bottom: 2rem;">
+                            <h4 style="margin-bottom: 1rem; color: #333;">✅ Quick Rule Selection</h4>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div class="rule-checkbox">
+                                    <input type="checkbox" id="rule-required" onchange="toggleRule('required_columns')">
+                                    <label for="rule-required">
+                                        <strong>Required Columns</strong><br>
+                                        <span style="font-size: 0.9rem; color: #666;">Ensures all mandatory columns are present</span>
+                                    </label>
+                                </div>
+                                <div class="rule-checkbox">
+                                    <input type="checkbox" id="rule-datatype" onchange="toggleRule('data_type')">
+                                    <label for="rule-datatype">
+                                        <strong>Data Type Validation</strong><br>
+                                        <span style="font-size: 0.9rem; color: #666;">Validates data types for each column</span>
+                                    </label>
+                                </div>
+                                <div class="rule-checkbox">
+                                    <input type="checkbox" id="rule-range" onchange="toggleRule('range')">
+                                    <label for="rule-range">
+                                        <strong>Range Validation</strong><br>
+                                        <span style="font-size: 0.9rem; color: #666;">Checks values are within acceptable ranges</span>
+                                    </label>
+                                </div>
+                                <div class="rule-checkbox">
+                                    <input type="checkbox" id="rule-completeness" onchange="toggleRule('completeness')">
+                                    <label for="rule-completeness">
+                                        <strong>Completeness Check</strong><br>
+                                        <span style="font-size: 0.9rem; color: #666;">Ensures no missing values in critical fields</span>
+                                    </label>
+                                </div>
                             </div>
-                            <div class="rule-item">
-                                <h4>Range Validation</h4>
-                                <p>Checks values are within acceptable ranges</p>
-                                <button class="btn btn-primary" onclick="addRangeRule()">Add Rule</button>
+                        </div>
+
+                        <!-- Manual Rule Builder -->
+                        <div>
+                            <h4 style="margin-bottom: 1rem; color: #333;">🔧 Manual Rule Builder</h4>
+                            <div class="rule-builder">
+                                <div class="rule-item">
+                                    <h4>Required Columns</h4>
+                                    <p>Ensures all mandatory columns are present</p>
+                                    <button class="btn btn-primary" onclick="addRequiredColumnsRule()">Add Rule</button>
+                                </div>
+                                <div class="rule-item">
+                                    <h4>Data Type Validation</h4>
+                                    <p>Validates data types for each column</p>
+                                    <button class="btn btn-primary" onclick="addDataTypeRule()">Add Rule</button>
+                                </div>
+                                <div class="rule-item">
+                                    <h4>Range Validation</h4>
+                                    <p>Checks values are within acceptable ranges</p>
+                                    <button class="btn btn-primary" onclick="addRangeRule()">Add Rule</button>
+                                </div>
+                                <div class="rule-item">
+                                    <h4>Completeness Check</h4>
+                                    <p>Ensures no missing values in critical fields</p>
+                                    <button class="btn btn-primary" onclick="addCompletenessRule()">Add Rule</button>
+                                </div>
                             </div>
-                                                    <div class="rule-item">
-                            <h4>Completeness Check</h4>
-                            <p>Ensures no missing values in critical fields</p>
-                            <button class="btn btn-primary" onclick="addCompletenessRule()">Add Rule</button>
                         </div>
                     </div>
 
@@ -1100,6 +1184,174 @@
                 default:
                     return true;
             }
+        }
+
+        // Toggle rule based on checkbox
+        function toggleRule(ruleType) {
+            const checkbox = document.getElementById(`rule-${ruleType.split('_')[1]}`);
+            const isChecked = checkbox.checked;
+            
+            if (isChecked) {
+                // Add rule
+                switch(ruleType) {
+                    case 'required_columns':
+                        addRequiredColumnsRule();
+                        break;
+                    case 'data_type':
+                        addDataTypeRule();
+                        break;
+                    case 'range':
+                        addRangeRule();
+                        break;
+                    case 'completeness':
+                        addCompletenessRule();
+                        break;
+                }
+                checkbox.parentElement.classList.add('checked');
+            } else {
+                // Remove rule
+                const ruleIndex = currentRules.findIndex(rule => rule.type === ruleType);
+                if (ruleIndex !== -1) {
+                    currentRules.splice(ruleIndex, 1);
+                    updateRulesDisplay();
+                    showAlert('Rule removed!', 'info');
+                }
+                checkbox.parentElement.classList.remove('checked');
+            }
+        }
+
+        // Upload rules file
+        function uploadRulesFile() {
+            const fileInput = document.getElementById('rulesFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showAlert('Please select a rules file first!', 'error');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    let rules;
+                    if (file.name.endsWith('.json')) {
+                        rules = JSON.parse(e.target.result);
+                    } else if (file.name.endsWith('.yaml') || file.name.endsWith('.yml')) {
+                        // Simple YAML parsing for basic rules
+                        rules = parseSimpleYAML(e.target.result);
+                    } else {
+                        showAlert('Unsupported file format. Please use JSON or YAML.', 'error');
+                        return;
+                    }
+                    
+                    if (Array.isArray(rules)) {
+                        currentRules = rules;
+                        updateRulesDisplay();
+                        updateCheckboxesFromRules();
+                        showAlert(`Successfully loaded ${rules.length} rules!`, 'success');
+                    } else {
+                        showAlert('Invalid rules format. File should contain an array of rules.', 'error');
+                    }
+                } catch (error) {
+                    showAlert('Error parsing rules file: ' + error.message, 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // Parse simple YAML (basic implementation)
+        function parseSimpleYAML(yamlText) {
+            const rules = [];
+            const lines = yamlText.split('\n');
+            let currentRule = null;
+            
+            for (let line of lines) {
+                line = line.trim();
+                if (line.startsWith('- type:')) {
+                    if (currentRule) rules.push(currentRule);
+                    currentRule = { type: line.split(':')[1].trim() };
+                } else if (line.includes(':') && currentRule) {
+                    const [key, value] = line.split(':').map(s => s.trim());
+                    if (key === 'columns' && value.includes('[')) {
+                        currentRule[key] = value.replace(/[\[\]]/g, '').split(',').map(s => s.trim());
+                    } else if (key === 'rules' && value.includes('{')) {
+                        // Parse nested rules object
+                        const rulesText = value.replace(/[{}]/g, '');
+                        const rulesObj = {};
+                        rulesText.split(',').forEach(rule => {
+                            const [k, v] = rule.split(':').map(s => s.trim());
+                            if (k && v) rulesObj[k] = v;
+                        });
+                        currentRule[key] = rulesObj;
+                    } else {
+                        currentRule[key] = value;
+                    }
+                }
+            }
+            
+            if (currentRule) rules.push(currentRule);
+            return rules;
+        }
+
+        // Download sample rules
+        function downloadSampleRules() {
+            const sampleRules = [
+                {
+                    type: 'required_columns',
+                    name: 'Required Columns',
+                    description: 'Ensures all mandatory columns are present',
+                    columns: ['specimen_id', 'collection_date', 'test_type', 'department']
+                },
+                {
+                    type: 'data_type',
+                    name: 'Data Type Validation',
+                    description: 'Validates data types for each column',
+                    rules: {
+                        specimen_id: 'string',
+                        collection_date: 'date',
+                        tat_hours: 'number'
+                    }
+                },
+                {
+                    type: 'range',
+                    name: 'Range Validation',
+                    description: 'Checks values are within acceptable ranges',
+                    rules: {
+                        tat_hours: { min: 0, max: 72 }
+                    }
+                },
+                {
+                    type: 'completeness',
+                    name: 'Completeness Check',
+                    description: 'Ensures no missing values in critical fields',
+                    columns: ['specimen_id', 'test_type', 'department']
+                }
+            ];
+            
+            const blob = new Blob([JSON.stringify(sampleRules, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'sample_data_quality_rules.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Update checkboxes based on current rules
+        function updateCheckboxesFromRules() {
+            const checkboxes = {
+                'required_columns': 'rule-required',
+                'data_type': 'rule-datatype',
+                'range': 'rule-range',
+                'completeness': 'rule-completeness'
+            };
+            
+            Object.entries(checkboxes).forEach(([ruleType, checkboxId]) => {
+                const checkbox = document.getElementById(checkboxId);
+                const hasRule = currentRules.some(rule => rule.type === ruleType);
+                checkbox.checked = hasRule;
+                checkbox.parentElement.classList.toggle('checked', hasRule);
+            });
         }
 
         // Initialize custom rule builder

@@ -1,0 +1,57 @@
+[
+  {
+    "type": "required_columns",
+    "name": "Required Columns",
+    "description": "Ensures all mandatory columns are present",
+    "columns": ["specimen_id", "collection_date", "test_type", "department"]
+  },
+  {
+    "type": "data_type",
+    "name": "Data Type Validation",
+    "description": "Validates data types for each column",
+    "rules": {
+      "specimen_id": "string",
+      "collection_date": "date",
+      "tat_hours": "number",
+      "patient_age": "number",
+      "quality_score": "number"
+    }
+  },
+  {
+    "type": "range",
+    "name": "Range Validation",
+    "description": "Checks values are within acceptable ranges",
+    "rules": {
+      "tat_hours": { "min": 0, "max": 72 },
+      "patient_age": { "min": 0, "max": 120 },
+      "quality_score": { "min": 0, "max": 100 }
+    }
+  },
+  {
+    "type": "completeness",
+    "name": "Completeness Check",
+    "description": "Ensures no missing values in critical fields",
+    "columns": ["specimen_id", "test_type", "department", "tat_hours"]
+  },
+  {
+    "type": "custom_range",
+    "name": "Custom TAT Range",
+    "description": "Ensures TAT is within acceptable limits for urgent tests",
+    "column": "tat_hours",
+    "min": 0,
+    "max": 24
+  },
+  {
+    "type": "custom_completeness",
+    "name": "Critical Fields",
+    "description": "Ensures no missing values in critical identification fields",
+    "columns": ["specimen_id", "patient_id", "test_type"]
+  },
+  {
+    "type": "custom_format",
+    "name": "Specimen ID Format",
+    "description": "Validates specimen ID follows expected format",
+    "column": "specimen_id",
+    "format": "alphanumeric"
+  }
+]
