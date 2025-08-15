@@ -740,6 +740,16 @@
                     <div id="dataPreview">
                         <p style="color: #666; font-style: italic;">Upload a CSV file to see data preview</p>
                     </div>
+                    
+                    <!-- Manual Chart Update -->
+                    <div style="margin-top: 1rem; text-align: center;">
+                        <button class="btn btn-primary" onclick="forceUpdateCharts()" style="margin-right: 1rem;">
+                            🔄 Force Update Charts
+                        </button>
+                        <button class="btn btn-secondary" onclick="showDataDebug()">
+                            🐛 Show Data Debug
+                        </button>
+                    </div>
                 </div>
 
                     <!-- Custom Rule Builder -->
@@ -1023,19 +1033,32 @@
 
         // Process uploaded data for chart visualization
         function processDataForCharts(data) {
+            console.log('Raw data received:', data);
+            console.log('First row keys:', data[0] ? Object.keys(data[0]) : 'No data');
+            
             // Skip header row if present and filter out invalid rows
             const cleanData = data.filter(row => {
                 // Skip header row
                 if (row.specimen_id === 'specimen_id') return false;
                 
-                // Check if row has essential data
-                return row.specimen_id && 
-                       row.collection_date && 
-                       row.department && 
-                       row.tat_hours !== undefined && 
-                       row.tat_hours !== null && 
-                       row.tat_hours !== '';
+                // Check if row has essential data - be more flexible with column names
+                const hasSpecimenId = row.specimen_id || row.specimen_id === 0;
+                const hasDate = row.collection_date || row.date || row.Date;
+                const hasDept = row.department || row.dept || row.Department;
+                const hasTAT = row.tat_hours !== undefined && row.tat_hours !== null && row.tat_hours !== '';
+                
+                console.log('Row validation:', {
+                    specimen_id: hasSpecimenId,
+                    date: hasDate,
+                    dept: hasDept,
+                    tat: hasTAT,
+                    row: row
+                });
+                
+                return hasSpecimenId && hasDate && hasDept && hasTAT;
             });
+
+            console.log('Clean data after filtering:', cleanData);
 
             if (cleanData.length === 0) {
                 throw new Error('No valid data found for charting. Please ensure your CSV has specimen_id, collection_date, department, and tat_hours columns with valid data.');
@@ -1046,9 +1069,12 @@
             const departmentGroups = {};
             
             cleanData.forEach(row => {
-                const date = row.collection_date || 'Unknown';
-                const dept = row.department || 'Unknown';
-                const tat = parseFloat(row.tat_hours);
+                // Be flexible with column names
+                const date = row.collection_date || row.date || row.Date || 'Unknown';
+                const dept = row.department || row.dept || row.Department || 'Unknown';
+                const tat = parseFloat(row.tat_hours || row.tat || row.TAT || row.tat_hours);
+                
+                console.log('Processing row:', { date, dept, tat, originalRow: row });
                 
                 // Skip rows with invalid TAT values
                 if (isNaN(tat)) {
@@ -1168,9 +1194,51 @@
                         </tbody>
                     </table>
                 </div>
+                
+                <!-- Manual Chart Update -->
+                <div style="margin-top: 1rem; text-align: center;">
+                    <button class="btn btn-primary" onclick="forceUpdateCharts()" style="margin-right: 1rem;">
+                        🔄 Force Update Charts
+                    </button>
+                    <button class="btn btn-secondary" onclick="showDataDebug()">
+                        🐛 Show Data Debug
+                    </button>
+                </div>
             `;
             
             previewContainer.innerHTML = previewHtml;
+        }
+
+        // Force update charts with current data
+        function forceUpdateCharts() {
+            if (!currentData || currentData.length === 0) {
+                showAlert('No data available to update charts', 'warning');
+                return;
+            }
+            
+            showAlert('Forcing chart update...', 'info');
+            updateDashboardCharts();
+        }
+
+        // Show data debugging information
+        function showDataDebug() {
+            if (!currentData || currentData.length === 0) {
+                showAlert('No data available for debugging', 'warning');
+                return;
+            }
+            
+            const debugInfo = `
+                <strong>Data Debug Information:</strong><br>
+                • Total rows: ${currentData.length}<br>
+                • First row keys: ${Object.keys(currentData[0] || {}).join(', ')}<br>
+                • Sample first row: ${JSON.stringify(currentData[0], null, 2)}<br>
+                • Sample second row: ${JSON.stringify(currentData[1], null, 2)}<br>
+                • Current data type: ${typeof currentData}<br>
+                • Is array: ${Array.isArray(currentData)}
+            `;
+            
+            showAlert(debugInfo, 'info');
+            console.log('Data Debug - Current Data:', currentData);
         }
 
         // Set current date in Teams Bot form
@@ -1203,12 +1271,18 @@
                 Papa.parse(file, {
                     complete: function(results) {
                         if (results.data && results.data.length > 0) {
+                            console.log('CSV parsed successfully:', results.data);
+                            console.log('Column headers:', results.data[0]);
+                            
                             currentData = results.data;
                             updateDataStatus(`CSV uploaded: ${results.data.length} records`);
                             updateDataPreview(results.data);
                             showAlert('CSV file uploaded successfully!', 'success');
-                            // Update dashboard charts with new data
-                            updateDashboardCharts();
+                            
+                            // Try to update charts immediately
+                            setTimeout(() => {
+                                updateDashboardCharts();
+                            }, 100);
                         } else {
                             showAlert('Error parsing CSV file', 'error');
                         }
