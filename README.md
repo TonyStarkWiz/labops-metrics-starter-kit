@@ -98,7 +98,31 @@ This creates `data/seeds/exports/specimens_latest.csv` ready for Power BI import
 The dashboard includes a "Trigger Teams Alert (Dry-Run)" button that:
 - Shows the exact JSON payload in a collapsible panel
 - Sends to Teams webhook if `TEAMS_WEBHOOK_URL` is configured
-- Prints payload to console in dry-run mode
+
+## 🧪 Test Data
+
+### Interactive Demo Testing
+For testing the interactive features, use the provided test data file:
+
+**`test_lab_data.csv`** - Comprehensive lab data with intentional data quality issues
+- **50 specimen records** across 5 days (Jan 15-19, 2024)
+- **Multiple test types**: CBC, Chemistry Panel, Blood Culture, HIV Test, Urinalysis, Coagulation Panel, Stool Culture, Lipid Panel, Thyroid Function
+- **4 departments**: Hematology, Chemistry, Microbiology, Immunology
+- **Data quality issues** for testing validation rules:
+  - Missing result values (6 records)
+  - Mixed data types in result_value column
+  - Various TAT ranges (1.4 to 72.0 hours)
+
+### How to Use Test Data
+1. **Download** `test_lab_data.csv` from the repository
+2. **Upload to interactive demo** at the Data Quality tab
+3. **Add validation rules** and run data quality checks
+4. **View violations** and export results
+
+### Alternative Download Methods
+- **Direct download**: Click the file in GitHub and use "Raw" button
+- **Download page**: Open `download_test_data.html` in your browser
+- **Copy-paste**: Copy content and create new CSV file
 
 ## 📋 Data Quality
 
