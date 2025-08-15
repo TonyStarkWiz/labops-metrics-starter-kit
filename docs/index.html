@@ -1036,27 +1036,43 @@
             console.log('Raw data received:', data);
             console.log('First row keys:', data[0] ? Object.keys(data[0]) : 'No data');
             
-            // Skip header row if present and filter out invalid rows
-            const cleanData = data.filter(row => {
-                // Skip header row
-                if (row.specimen_id === 'specimen_id') return false;
+            try {
+                // Use smart data structure detector
+                const processedData = detectAndConvertDataStructure(data);
+                console.log('✅ Data structure processed:', processedData.length, 'rows');
                 
-                // Check if row has essential data - be more flexible with column names
-                const hasSpecimenId = row.specimen_id || row.specimen_id === 0;
-                const hasDate = row.collection_date || row.date || row.Date;
-                const hasDept = row.department || row.dept || row.Department;
-                const hasTAT = row.tat_hours !== undefined && row.tat_hours !== null && row.tat_hours !== '';
-                
-                console.log('Row validation:', {
-                    specimen_id: hasSpecimenId,
-                    date: hasDate,
-                    dept: hasDept,
-                    tat: hasTAT,
-                    row: row
+                // Filter out invalid rows
+                const cleanData = processedData.filter(row => {
+                    // Check if row has essential data
+                    const hasSpecimenId = row.specimen_id && row.specimen_id !== 'specimen_id';
+                    const hasDate = row.collection_date;
+                    const hasDept = row.department;
+                    const hasTAT = row.tat_hours !== undefined && row.tat_hours !== null && row.tat_hours !== '';
+                    
+                    if (!hasSpecimenId || !hasDate || !hasDept || !hasTAT) {
+                        console.warn('Skipping invalid row:', row);
+                        return false;
+                    }
+                    
+                    return true;
                 });
                 
-                return hasSpecimenId && hasDate && hasDept && hasTAT;
-            });
+                console.log('Clean data after filtering:', cleanData.length, 'rows');
+                
+                if (cleanData.length === 0) {
+                    throw new Error('No valid data found after filtering. Please check your CSV format and data.');
+                }
+                
+                return processCleanDataForCharts(cleanData);
+                
+            } catch (error) {
+                console.error('Error in data processing:', error);
+                throw new Error(`Data processing failed: ${error.message}`);
+            }
+        }
+        
+        // Process clean data for charts
+        function processCleanDataForCharts(cleanData) {
 
             console.log('Clean data after filtering:', cleanData);
 
@@ -1069,10 +1085,9 @@
             const departmentGroups = {};
             
             cleanData.forEach(row => {
-                // Be flexible with column names
-                const date = row.collection_date || row.date || row.Date || 'Unknown';
-                const dept = row.department || row.dept || row.Department || 'Unknown';
-                const tat = parseFloat(row.tat_hours || row.tat || row.TAT || row.tat_hours);
+                const date = row.collection_date;
+                const dept = row.department;
+                const tat = parseFloat(row.tat_hours);
                 
                 console.log('Processing row:', { date, dept, tat, originalRow: row });
                 
@@ -1220,6 +1235,77 @@
             updateDashboardCharts();
         }
 
+        // Smart data structure detector and converter
+        function detectAndConvertDataStructure(data) {
+            console.log('🔍 Detecting data structure...');
+            
+            if (!data || data.length === 0) {
+                throw new Error('No data to process');
+            }
+            
+            const firstRow = data[0];
+            const secondRow = data[1];
+            
+            // Case 1: Already object-based with column names
+            if (firstRow && typeof firstRow === 'object' && !Array.isArray(firstRow)) {
+                const keys = Object.keys(firstRow);
+                if (keys.length > 0 && keys.some(key => key !== '0' && key !== '1' && key !== '2')) {
+                    console.log('✅ Data is already object-based with column names');
+                    return data;
+                }
+            }
+            
+            // Case 2: Array-based with headers in first row
+            if (Array.isArray(firstRow) && firstRow.length > 0) {
+                console.log('🔄 Converting array-based data to object-based...');
+                
+                const headers = firstRow.map(header => String(header).trim());
+                console.log('Headers detected:', headers);
+                
+                // Find key columns by content analysis
+                const specimenIdIndex = headers.findIndex(h => 
+                    h.toLowerCase().includes('specimen') || h.toLowerCase().includes('id')
+                );
+                const dateIndex = headers.findIndex(h => 
+                    h.toLowerCase().includes('date') || h.toLowerCase().includes('collection')
+                );
+                const deptIndex = headers.findIndex(h => 
+                    h.toLowerCase().includes('department') || h.toLowerCase().includes('dept')
+                );
+                const tatIndex = headers.findIndex(h => 
+                    h.toLowerCase().includes('tat') || h.toLowerCase().includes('hours')
+                );
+                
+                console.log('Column mapping:', {
+                    specimen_id: specimenIdIndex >= 0 ? headers[specimenIdIndex] : 'Not found',
+                    collection_date: dateIndex >= 0 ? headers[dateIndex] : 'Not found',
+                    department: deptIndex >= 0 ? headers[deptIndex] : 'Not found',
+                    tat_hours: tatIndex >= 0 ? headers[tatIndex] : 'Not found'
+                });
+                
+                // Convert data rows
+                const convertedData = data.slice(1).map((row, rowIndex) => {
+                    const obj = {};
+                    headers.forEach((header, colIndex) => {
+                        obj[header] = row[colIndex];
+                    });
+                    
+                    // Add standard column names for compatibility
+                    if (specimenIdIndex >= 0) obj.specimen_id = row[specimenIdIndex];
+                    if (dateIndex >= 0) obj.collection_date = row[dateIndex];
+                    if (deptIndex >= 0) obj.department = row[deptIndex];
+                    if (tatIndex >= 0) obj.tat_hours = row[tatIndex];
+                    
+                    return obj;
+                });
+                
+                console.log('✅ Data converted successfully. Sample row:', convertedData[0]);
+                return convertedData;
+            }
+            
+            throw new Error('Unable to detect data structure. Please check your CSV format.');
+        }
+
         // Show data debugging information
         function showDataDebug() {
             if (!currentData || currentData.length === 0) {
@@ -1269,10 +1355,12 @@
             const file = event.target.files[0];
             if (file) {
                 Papa.parse(file, {
+                    header: true, // Use first row as headers
+                    skipEmptyLines: true, // Skip empty lines
                     complete: function(results) {
                         if (results.data && results.data.length > 0) {
                             console.log('CSV parsed successfully:', results.data);
-                            console.log('Column headers:', results.data[0]);
+                            console.log('Column headers:', Object.keys(results.data[0]));
                             
                             currentData = results.data;
                             updateDataStatus(`CSV uploaded: ${results.data.length} records`);
