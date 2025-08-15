@@ -229,6 +229,30 @@
             font-size: 0.9rem;
         }
 
+        .rule-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .rule-type {
+            font-weight: 600;
+            color: #28a745;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+
+        .rule-details {
+            color: #333;
+            font-size: 0.9rem;
+        }
+
+        .rule-item.active {
+            border-left-color: #28a745;
+            background: #f8fff9;
+        }
+
         /* Teams Bot Section */
         .teams-container {
             background: white;
@@ -571,14 +595,47 @@
                                 <p>Checks values are within acceptable ranges</p>
                                 <button class="btn btn-primary" onclick="addRangeRule()">Add Rule</button>
                             </div>
-                            <div class="rule-item">
-                                <h4>Completeness Check</h4>
-                                <p>Ensures no missing values in critical fields</p>
-                                <button class="btn btn-primary" onclick="addCompletenessRule()">Add Rule</button>
+                                                    <div class="rule-item">
+                            <h4>Completeness Check</h4>
+                            <p>Ensures no missing values in critical fields</p>
+                            <button class="btn btn-primary" onclick="addCompletenessRule()">Add Rule</button>
+                        </div>
+                    </div>
+
+                    <!-- Active Rules Display -->
+                    <div style="margin-top: 2rem;">
+                        <h3>📋 Active Validation Rules</h3>
+                        <div id="activeRules">
+                            <p style="color: #666; font-style: italic;">No rules added yet. Click the buttons above to add validation rules.</p>
+                        </div>
+                    </div>
+
+                    <!-- Custom Rule Builder -->
+                    <div style="margin-top: 2rem;">
+                        <h3>🔧 Custom Rule Builder</h3>
+                        <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                                <div>
+                                    <label style="font-weight: 500; margin-bottom: 0.5rem; display: block;">Rule Type:</label>
+                                    <select id="customRuleType" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                                        <option value="custom_range">Custom Range</option>
+                                        <option value="custom_completeness">Custom Completeness</option>
+                                        <option value="custom_format">Custom Format</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style="font-weight: 500; margin-bottom: 0.5rem; display: block;">Column Name:</label>
+                                    <input type="text" id="customColumn" placeholder="e.g., tat_hours" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                                </div>
                             </div>
+                            <div id="customRuleParams" style="margin-bottom: 1rem;">
+                                <!-- Dynamic parameters will be inserted here -->
+                            </div>
+                            <button class="btn btn-primary" onclick="addCustomRule()">➕ Add Custom Rule</button>
                         </div>
                     </div>
                 </div>
+            </div>
 
                 <!-- Validation Results -->
                 <div id="validationResults" class="results-container" style="display: none;">
@@ -827,50 +884,232 @@
 
         // Add data quality rules
         function addRequiredColumnsRule() {
-            currentRules.push({
+            const rule = {
                 type: 'required_columns',
                 name: 'Required Columns',
                 description: 'Ensures all mandatory columns are present',
                 columns: ['specimen_id', 'collection_date', 'test_type', 'department']
-            });
+            };
+            currentRules.push(rule);
+            updateRulesDisplay();
             showAlert('Required columns rule added!', 'info');
         }
 
         function addDataTypeRule() {
-            currentRules.push({
+            const rule = {
                 type: 'data_type',
                 name: 'Data Type Validation',
                 description: 'Validates data types for each column',
                 rules: {
                     specimen_id: 'string',
                     collection_date: 'date',
-                    tat_hours: 'number'
+                    tat_hours: 'number',
+                    patient_age: 'number',
+                    quality_score: 'number'
                 }
-            });
+            };
+            currentRules.push(rule);
+            updateRulesDisplay();
             showAlert('Data type validation rule added!', 'info');
         }
 
         function addRangeRule() {
-            currentRules.push({
+            const rule = {
                 type: 'range',
                 name: 'Range Validation',
                 description: 'Checks values are within acceptable ranges',
                 rules: {
-                    tat_hours: { min: 0, max: 72 }
+                    tat_hours: { min: 0, max: 72 },
+                    patient_age: { min: 0, max: 120 },
+                    quality_score: { min: 0, max: 100 }
                 }
-            });
+            };
+            currentRules.push(rule);
+            updateRulesDisplay();
             showAlert('Range validation rule added!', 'info');
         }
 
         function addCompletenessRule() {
-            currentRules.push({
+            const rule = {
                 type: 'completeness',
                 name: 'Completeness Check',
                 description: 'Ensures no missing values in critical fields',
-                columns: ['specimen_id', 'test_type', 'department']
-            });
+                columns: ['specimen_id', 'test_type', 'department', 'tat_hours']
+            };
+            currentRules.push(rule);
+            updateRulesDisplay();
             showAlert('Completeness check rule added!', 'info');
         }
+
+        // Update rules display
+        function updateRulesDisplay() {
+            const rulesContainer = document.getElementById('activeRules');
+            if (!rulesContainer) return;
+            
+            if (currentRules.length === 0) {
+                rulesContainer.innerHTML = '<p style="color: #666; font-style: italic;">No rules added yet. Click the buttons above to add validation rules.</p>';
+                return;
+            }
+            
+            rulesContainer.innerHTML = currentRules.map((rule, index) => `
+                <div class="rule-item active" style="border-left-color: #28a745;">
+                    <div class="rule-header">
+                        <span class="rule-type">${rule.type.toUpperCase()}</span>
+                        <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8rem;" onclick="removeRule(${index})">Remove</button>
+                    </div>
+                    <div class="rule-details">
+                        <strong>${rule.name}</strong><br>
+                        ${rule.description}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Remove rule
+        function removeRule(index) {
+            currentRules.splice(index, 1);
+            updateRulesDisplay();
+            showAlert('Rule removed!', 'info');
+        }
+
+        // Custom rule builder
+        function updateCustomRuleParams() {
+            const ruleType = document.getElementById('customRuleType').value;
+            const paramsContainer = document.getElementById('customRuleParams');
+            
+            let html = '';
+            switch(ruleType) {
+                case 'custom_range':
+                    html = `
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div>
+                                <label style="font-weight: 500; margin-bottom: 0.5rem; display: block;">Minimum Value:</label>
+                                <input type="number" id="customMin" placeholder="0" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                            </div>
+                            <div>
+                                <label style="font-weight: 500; margin-bottom: 0.5rem; display: block;">Maximum Value:</label>
+                                <input type="number" id="customMax" placeholder="100" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                            </div>
+                        </div>
+                    `;
+                    break;
+                case 'custom_completeness':
+                    html = `
+                        <div>
+                            <label style="font-weight: 500; margin-bottom: 0.5rem; display: block;">Required Columns (comma-separated):</label>
+                            <input type="text" id="customColumns" placeholder="specimen_id, test_type, department" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                        </div>
+                    `;
+                    break;
+                case 'custom_format':
+                    html = `
+                        <div>
+                            <label style="font-weight: 500; margin-bottom: 0.5rem; display: block;">Expected Format:</label>
+                            <select id="customFormat" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                                <option value="email">Email Address</option>
+                                <option value="phone">Phone Number</option>
+                                <option value="date">Date (YYYY-MM-DD)</option>
+                                <option value="time">Time (HH:MM)</option>
+                                <option value="numeric">Numeric Only</option>
+                                <option value="alphanumeric">Alphanumeric</option>
+                            </select>
+                        </div>
+                    `;
+                    break;
+            }
+            paramsContainer.innerHTML = html;
+        }
+
+        function addCustomRule() {
+            const ruleType = document.getElementById('customRuleType').value;
+            const column = document.getElementById('customColumn').value.trim();
+            
+            if (!column) {
+                showAlert('Please enter a column name!', 'error');
+                return;
+            }
+            
+            let rule;
+            switch(ruleType) {
+                case 'custom_range':
+                    const min = parseFloat(document.getElementById('customMin').value);
+                    const max = parseFloat(document.getElementById('customMax').value);
+                    if (isNaN(min) || isNaN(max)) {
+                        showAlert('Please enter valid min and max values!', 'error');
+                        return;
+                    }
+                    rule = {
+                        type: 'custom_range',
+                        name: `Custom Range: ${column}`,
+                        description: `Ensures ${column} is between ${min} and ${max}`,
+                        column: column,
+                        min: min,
+                        max: max
+                    };
+                    break;
+                case 'custom_completeness':
+                    const columns = document.getElementById('customColumns').value.split(',').map(c => c.trim()).filter(c => c);
+                    if (columns.length === 0) {
+                        showAlert('Please enter at least one column name!', 'error');
+                        return;
+                    }
+                    rule = {
+                        type: 'custom_completeness',
+                        name: `Custom Completeness: ${columns.join(', ')}`,
+                        description: `Ensures no missing values in columns: ${columns.join(', ')}`,
+                        columns: columns
+                    };
+                    break;
+                case 'custom_format':
+                    const format = document.getElementById('customFormat').value;
+                    rule = {
+                        type: 'custom_format',
+                        name: `Custom Format: ${column}`,
+                        description: `Validates ${column} format: ${format}`,
+                        column: column,
+                        format: format
+                    };
+                    break;
+            }
+            
+            if (rule) {
+                currentRules.push(rule);
+                updateRulesDisplay();
+                showAlert('Custom rule added successfully!', 'success');
+                // Clear form
+                document.getElementById('customColumn').value = '';
+                document.getElementById('customRuleParams').innerHTML = '';
+            }
+        }
+
+        // Format validation helper
+        function validateFormat(value, format) {
+            switch(format) {
+                case 'email':
+                    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+                case 'phone':
+                    return /^[\+]?[1-9][\d]{0,15}$/.test(value.replace(/[\s\-\(\)]/g, ''));
+                case 'date':
+                    return /^\d{4}-\d{2}-\d{2}$/.test(value);
+                case 'time':
+                    return /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(value);
+                case 'numeric':
+                    return /^\d+(\.\d+)?$/.test(value);
+                case 'alphanumeric':
+                    return /^[a-zA-Z0-9\s]+$/.test(value);
+                default:
+                    return true;
+            }
+        }
+
+        // Initialize custom rule builder
+        document.addEventListener('DOMContentLoaded', function() {
+            const customRuleType = document.getElementById('customRuleType');
+            if (customRuleType) {
+                customRuleType.addEventListener('change', updateCustomRuleParams);
+                updateCustomRuleParams(); // Initial load
+            }
+        });
 
         // Run data quality validation
         function runValidation() {
@@ -934,21 +1173,62 @@
                         });
                         break;
                         
-                    case 'range':
-                        Object.entries(rule.rules).forEach(([col, range]) => {
+                                            case 'range':
+                            Object.entries(rule.rules).forEach(([col, range]) => {
+                                const outOfRange = data.filter(row => {
+                                    const value = parseFloat(row[col]);
+                                    return isNaN(value) || value < range.min || value > range.max;
+                                });
+                                if (outOfRange.length > 0) {
+                                    violations.push({
+                                        type: 'error',
+                                        message: `Values out of range in column: ${col}`,
+                                        details: `${outOfRange.length} rows have values outside ${range.min}-${range.max}`
+                                    });
+                                }
+                            });
+                            break;
+                        case 'custom_range':
                             const outOfRange = data.filter(row => {
-                                const value = parseFloat(row[col]);
-                                return isNaN(value) || value < range.min || value > range.max;
+                                const value = parseFloat(row[rule.column]);
+                                return isNaN(value) || value < rule.min || value > rule.max;
                             });
                             if (outOfRange.length > 0) {
                                 violations.push({
                                     type: 'error',
-                                    message: `Values out of range in column: ${col}`,
-                                    details: `${outOfRange.length} rows have values outside ${range.min}-${range.max}`
+                                    message: `Values out of range in column: ${rule.column}`,
+                                    details: `${outOfRange.length} rows have values outside ${rule.min}-${rule.max}`
                                 });
                             }
-                        });
-                        break;
+                            break;
+                        case 'custom_completeness':
+                            rule.columns.forEach(col => {
+                                const missingValues = data.filter(row => 
+                                    !row[col] || row[col].toString().trim() === ''
+                                );
+                                if (missingValues.length > 0) {
+                                    violations.push({
+                                        type: 'warning',
+                                        message: `Missing values in column: ${col}`,
+                                        details: `${missingValues.length} rows have missing values`
+                                    });
+                                }
+                            });
+                            break;
+                        case 'custom_format':
+                            const invalidFormat = data.filter(row => {
+                                const value = row[rule.column];
+                                if (!value) return false;
+                                return !validateFormat(value, rule.format);
+                            });
+                            if (invalidFormat.length > 0) {
+                                violations.push({
+                                    type: 'warning',
+                                    message: `Invalid format in column: ${rule.column}`,
+                                    details: `${invalidFormat.length} rows have invalid ${rule.format} format`
+                                });
+                            }
+                            break;
                 }
             });
             
