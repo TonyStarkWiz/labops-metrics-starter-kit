@@ -4,7 +4,7 @@ url: "https://TonyStarkWiz.github.io"
 baseurl: "/labops-metrics-starter-kit"
 
 # Build settings
-theme: jekyll-theme-cayman
+# theme: jekyll-theme-cayman  # Commented out to use custom index.html
 plugins:
   - jekyll-seo-tag
   - jekyll-sitemap
@@ -27,6 +27,14 @@ github:
   repository_url: https://github.com/TonyStarkWiz/labops-metrics-starter-kit
   zip_url: https://github.com/TonyStarkWiz/labops-metrics-starter-kit/archive/main.zip
   clone_url: https://github.com/TonyStarkWiz/labops-metrics-starter-kit.git
+
+# Defaults for pages
+defaults:
+  - scope:
+      path: ""
+      type: "pages"
+    values:
+      layout: "page"
 
 # Exclude from processing
 exclude:

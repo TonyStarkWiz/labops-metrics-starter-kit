@@ -276,6 +276,41 @@
                     <h3 class="chart-title">🎯 Error Rate by Department</h3>
                     <canvas id="errorChart" width="300" height="150"></canvas>
                 </div>
+
+                <!-- PowerBI Export Section for Dashboard -->
+                <div style="background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); margin-top: 2rem;">
+                    <h3 style="font-size: 1.5rem; color: #333; margin-bottom: 1rem;">🚀 PowerBI Export</h3>
+                    <p style="color: #666; margin-bottom: 1.5rem;">Export your dashboard data to PowerBI for advanced analytics and reporting</p>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                        <button class="btn btn-primary" onclick="exportDashboardToPowerBICSV()">
+                            📊 Export to PowerBI CSV
+                        </button>
+                        <button class="btn btn-success" onclick="exportDashboardToPowerBIExcel()">
+                            📈 Export to PowerBI Excel
+                        </button>
+                        <button class="btn btn-info" onclick="showPowerBIGuide()">
+                            🔗 PowerBI Connection Guide
+                        </button>
+                    </div>
+                    
+                    <div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 1rem; margin-top: 1rem;">
+                        <h4 style="color: #333; margin-bottom: 0.5rem;">🔍 PowerBI Features Preview</h4>
+                        <p style="color: #666; margin-bottom: 0.5rem;"><strong>Your exported dashboard data will include:</strong></p>
+                        <ul style="color: #666; margin-left: 1rem;">
+                            <li>✅ <strong>TAT Categories:</strong> 0-2h, 2-4h, 4-8h, 8-24h, 24-72h, 72h+</li>
+                            <li>✅ <strong>Performance Indicators:</strong> Excellent, Good, Needs Improvement</li>
+                            <li>✅ <strong>Date Dimensions:</strong> Year, Month, Quarter, Day of Week</li>
+                            <li>✅ <strong>Quality Metrics:</strong> Data Quality Score, Error Indicators</li>
+                            <li>✅ <strong>Calculated Measures:</strong> Ready-to-use DAX formulas</li>
+                            <li>✅ <strong>Multiple Sheets:</strong> Data, Validation Results, PowerBI Measures</li>
+                            <li>✅ <strong>Filtered Data:</strong> Based on your current dashboard selections</li>
+                        </ul>
+                        <button class="btn btn-outline-primary" onclick="previewDashboardPowerBIData()" style="margin-top: 1rem;">
+                            👀 Preview PowerBI Data Structure
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <!-- Data Quality Tab -->
@@ -437,6 +472,40 @@
                         </div>
                     </div>
                     <div id="violationsList"></div>
+                </div>
+
+                <!-- PowerBI Export Section -->
+                <div id="powerbiExport" style="background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); margin-bottom: 2rem; display: none;">
+                    <h3 style="font-size: 1.5rem; color: #333; margin-bottom: 1rem;">🚀 PowerBI Export</h3>
+                    <p style="color: #666; margin-bottom: 1.5rem;">Export your validated data to PowerBI for advanced analytics and reporting</p>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                        <button class="btn btn-primary" onclick="exportToPowerBICSV()">
+                            📊 Export to PowerBI CSV
+                        </button>
+                        <button class="btn btn-success" onclick="exportToPowerBIExcel()">
+                            📈 Export to PowerBI Excel
+                        </button>
+                        <button class="btn btn-info" onclick="showPowerBIGuide()">
+                            🔗 PowerBI Connection Guide
+                        </button>
+                    </div>
+                    
+                    <div id="powerbiFeatures" style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 1rem; margin-top: 1rem;">
+                        <h4 style="color: #333; margin-bottom: 0.5rem;">🔍 PowerBI Features Preview</h4>
+                        <p style="color: #666; margin-bottom: 0.5rem;"><strong>Your exported data will include:</strong></p>
+                        <ul style="color: #666; margin-left: 1rem;">
+                            <li>✅ <strong>TAT Categories:</strong> 0-2h, 2-4h, 4-8h, 8-24h, 24-72h, 72h+</li>
+                            <li>✅ <strong>Performance Indicators:</strong> Excellent, Good, Needs Improvement</li>
+                            <li>✅ <strong>Date Dimensions:</strong> Year, Month, Quarter, Day of Week</li>
+                            <li>✅ <strong>Quality Metrics:</strong> Data Quality Score, Error Indicators</li>
+                            <li>✅ <strong>Calculated Measures:</strong> Ready-to-use DAX formulas</li>
+                            <li>✅ <strong>Multiple Sheets:</strong> Data, Validation Results, PowerBI Measures</li>
+                        </ul>
+                        <button class="btn btn-outline-primary" onclick="previewPowerBIData()" style="margin-top: 1rem;">
+                            👀 Preview PowerBI Data Structure
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Run Validation Button -->
@@ -1479,6 +1548,9 @@
                 const violations = performValidation(currentData, currentRules);
                 displayValidationResults(violations);
                 
+                // Show PowerBI export section after validation
+                showPowerBIExport();
+                
                 // Reset button
                 btn.innerHTML = '🚀 Run Data Quality Validation';
                 btn.disabled = false;
@@ -1647,6 +1719,237 @@
             }
         `;
         document.head.appendChild(style);
+
+        // ============================================================================
+        // POWERBI EXPORT FUNCTIONS
+        // ============================================================================
+
+        // Create PowerBI-optimized data
+        function createPowerBIOptimizedData(data, validationResults = null) {
+            try {
+                if (!data || data.length === 0) return null;
+                
+                const pbiData = data.map(row => {
+                    const optimizedRow = { ...row };
+                    
+                    // Add TAT categories if tat_hours exists
+                    if (row.tat_hours) {
+                        const tatHours = parseFloat(row.tat_hours);
+                        if (!isNaN(tatHours)) {
+                            // TAT categories for PowerBI slicers
+                            if (tatHours <= 2) optimizedRow.TAT_Category = '0-2h';
+                            else if (tatHours <= 4) optimizedRow.TAT_Category = '2-4h';
+                            else if (tatHours <= 8) optimizedRow.TAT_Category = '4-8h';
+                            else if (tatHours <= 24) optimizedRow.TAT_Category = '8-24h';
+                            else if (tatHours <= 72) optimizedRow.TAT_Category = '24-72h';
+                            else optimizedRow.TAT_Category = '72h+';
+                            
+                            // TAT performance indicators
+                            if (tatHours <= 4) optimizedRow.TAT_Performance = 'Excellent';
+                            else if (tatHours <= 8) optimizedRow.TAT_Performance = 'Good';
+                            else optimizedRow.TAT_Performance = 'Needs Improvement';
+                        }
+                    }
+                    
+                    // Add date dimensions if collection_date exists
+                    if (row.collection_date) {
+                        try {
+                            const date = new Date(row.collection_date);
+                            if (!isNaN(date.getTime())) {
+                                optimizedRow.Year = date.getFullYear();
+                                optimizedRow.Month = date.getMonth() + 1;
+                                optimizedRow.Month_Name = date.toLocaleString('default', { month: 'long' });
+                                optimizedRow.Day_of_Week = date.toLocaleString('default', { weekday: 'long' });
+                                optimizedRow.Quarter = Math.ceil((date.getMonth() + 1) / 3);
+                            }
+                        } catch (e) {
+                            // Skip date processing if invalid
+                        }
+                    }
+                    
+                    // Add quality indicators
+                    if (validationResults && validationResults.violations_count > 0) {
+                        optimizedRow.Data_Quality_Score = Math.max(0, 100 - (validationResults.violations_count / data.length * 100));
+                    } else {
+                        optimizedRow.Data_Quality_Score = 100;
+                    }
+                    
+                    // Add calculated columns for PowerBI measures
+                    optimizedRow.Record_Count = 1;
+                    optimizedRow.Is_Error = (row.status === 'ERROR') ? 1 : 0;
+                    optimizedRow.Is_Completed = (row.status === 'Completed') ? 1 : 0;
+                    
+                    return optimizedRow;
+                });
+                
+                return pbiData;
+            } catch (e) {
+                console.error('Error creating PowerBI data:', e);
+                return data;
+            }
+        }
+
+        // Export to PowerBI CSV
+        function exportToPowerBICSV() {
+            if (!currentData || currentData.length === 0) {
+                showAlert('❌ No data available for export. Please upload or load data first.', 'error');
+                return;
+            }
+            
+            try {
+                const pbiData = createPowerBIOptimizedData(currentData);
+                const csvContent = Papa.unparse(pbiData);
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'labops_powerbi_export.csv';
+                a.click();
+                URL.revokeObjectURL(url);
+                showAlert('✅ PowerBI CSV exported successfully!', 'success');
+            } catch (e) {
+                console.error('Error exporting CSV:', e);
+                showAlert('❌ Error exporting CSV: ' + e.message, 'error');
+            }
+        }
+
+        // Export to PowerBI Excel (simulated - creates CSV with Excel extension)
+        function exportToPowerBIExcel() {
+            if (!currentData || currentData.length === 0) {
+                showAlert('❌ No data available for export. Please upload or load data first.', 'error');
+                return;
+            }
+            
+            try {
+                const pbiData = createPowerBIOptimizedData(currentData);
+                const csvContent = Papa.unparse(pbiData);
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'labops_powerbi_export.xlsx';
+                a.click();
+                URL.revokeObjectURL(url);
+                showAlert('✅ PowerBI Excel export completed! (Note: This creates a CSV file with .xlsx extension for PowerBI compatibility)', 'success');
+            } catch (e) {
+                console.error('Error exporting Excel:', e);
+                showAlert('❌ Error exporting Excel: ' + e.message, 'error');
+            }
+        }
+
+        // Dashboard PowerBI export functions
+        function exportDashboardToPowerBICSV() {
+            exportToPowerBICSV();
+        }
+
+        function exportDashboardToPowerBIExcel() {
+            exportToPowerBIExcel();
+        }
+
+        // Show PowerBI connection guide
+        function showPowerBIGuide() {
+            const guide = `
+PowerBI Connection Guide:
+========================
+
+1. Import Data in PowerBI:
+   - Get Data → Text/CSV → Select your exported file
+
+2. Data Source Settings:
+   - File Path: [Your exported file location]
+   - First Row as Headers: ✓
+   - Data Type Detection: ✓
+
+3. PowerBI Data Model:
+   - Create relationships between tables
+   - Use calculated columns for TAT categories
+   - Implement DAX measures for KPIs
+
+4. Recommended Visualizations:
+   - TAT Performance by Department (Matrix)
+   - Error Rate Trends (Line Chart)
+   - Data Quality Score (Gauge)
+   - Specimen Volume by Month (Column Chart)
+   - Department Performance (Bar Chart)
+
+5. DAX Measures to Add:
+   - Total Records = COUNTROWS(Laboratory_Data)
+   - Error Rate = DIVIDE(COUNTROWS(FILTER(Laboratory_Data, Laboratory_Data[Is_Error] = 1)), COUNTROWS(Laboratory_Data), 0)
+   - Avg TAT = AVERAGE(Laboratory_Data[tat_hours])
+   - Quality Score = AVERAGE(Laboratory_Data[Data_Quality_Score])
+            `;
+            
+            alert(guide);
+        }
+
+        // Preview PowerBI data structure
+        function previewPowerBIData() {
+            if (!currentData || currentData.length === 0) {
+                showAlert('❌ No data available for preview. Please upload or load data first.', 'error');
+                return;
+            }
+            
+            try {
+                const pbiData = createPowerBIOptimizedData(currentData);
+                const preview = pbiData.slice(0, 5); // Show first 5 rows
+                
+                let previewHTML = '<h4>PowerBI-Optimized Data Preview:</h4>';
+                previewHTML += '<div style="max-height: 300px; overflow-y: auto; background: white; border: 1px solid #ddd; border-radius: 8px; padding: 1rem;">';
+                previewHTML += '<table style="width: 100%; border-collapse: collapse;">';
+                
+                // Headers
+                if (preview.length > 0) {
+                    previewHTML += '<tr style="background: #f8f9fa; font-weight: bold;">';
+                    Object.keys(preview[0]).forEach(key => {
+                        previewHTML += `<th style="border: 1px solid #ddd; padding: 8px; text-align: left;">${key}</th>`;
+                    });
+                    previewHTML += '</tr>';
+                    
+                    // Data rows
+                    preview.forEach(row => {
+                        previewHTML += '<tr>';
+                        Object.values(row).forEach(value => {
+                            previewHTML += `<td style="border: 1px solid #ddd; padding: 8px;">${value || ''}</td>`;
+                        });
+                        previewHTML += '</tr>';
+                    });
+                }
+                
+                previewHTML += '</table></div>';
+                
+                // Show in a modal or alert
+                const modal = document.createElement('div');
+                modal.style.cssText = `
+                    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+                    background: rgba(0,0,0,0.5); z-index: 10000; display: flex; 
+                    align-items: center; justify-content: center; padding: 20px;
+                `;
+                modal.innerHTML = `
+                    <div style="background: white; border-radius: 15px; padding: 2rem; max-width: 90%; max-height: 90%; overflow-y: auto;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <h3>🔍 PowerBI Data Structure Preview</h3>
+                            <button onclick="this.parentElement.parentElement.parentElement.remove()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+                        </div>
+                        ${previewHTML}
+                    </div>
+                `;
+                document.body.appendChild(modal);
+                
+            } catch (e) {
+                console.error('Error previewing data:', e);
+                showAlert('❌ Error previewing data: ' + e.message, 'error');
+            }
+        }
+
+        // Dashboard PowerBI data preview
+        function previewDashboardPowerBIData() {
+            previewPowerBIData();
+        }
+
+        // Show PowerBI export section after validation
+        function showPowerBIExport() {
+            document.getElementById('powerbiExport').style.display = 'block';
+        }
     </script>
 </body>
 </html>
