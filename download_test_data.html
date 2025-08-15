@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download LabOps Test Data</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #667eea;
+            text-align: center;
+        }
+        .download-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #667eea;
+        }
+        .download-btn {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            margin: 10px 5px;
+            transition: background 0.3s;
+        }
+        .download-btn:hover {
+            background: #5a6fd8;
+        }
+        .file-info {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .instructions {
+            background: #d1ecf1;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border-left: 4px solid #17a2b8;
+        }
+        .warning {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border-left: 4px solid #ffc107;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 LabOps Test Data Download</h1>
+        
+        <div class="download-section">
+            <h2>📥 Download Test File</h2>
+            <p>Click the button below to download the test CSV file for testing the Data Quality Rules Engine:</p>
+            
+            <a href="test_lab_data.csv" download="LabOps_Test_Data.csv" class="download-btn">
+                📊 Download LabOps Test Data (CSV)
+            </a>
+            
+            <a href="LabOps_Test_Data.csv" download="LabOps_Test_Data.csv" class="download-btn">
+                📊 Download LabOps Test Data (Copy)
+            </a>
+        </div>
+
+        <div class="file-info">
+            <h3>📋 File Information</h3>
+            <ul>
+                <li><strong>Filename:</strong> LabOps_Test_Data.csv</li>
+                <li><strong>Format:</strong> CSV (Comma-Separated Values)</li>
+                <li><strong>Size:</strong> ~3.5 KB</li>
+                <li><strong>Records:</strong> 50 lab specimens</li>
+                <li><strong>Columns:</strong> 14 fields</li>
+                <li><strong>Data Period:</strong> January 15-19, 2024</li>
+            </ul>
+        </div>
+
+        <div class="instructions">
+            <h3>🎯 How to Use This File</h3>
+            <ol>
+                <li><strong>Download</strong> the CSV file using the button above</li>
+                <li><strong>Go to your interactive demo site</strong> (once deployed)</li>
+                <li><strong>Click the "Data Quality" tab</strong></li>
+                <li><strong>Upload this CSV file</strong> using the file upload area</li>
+                <li><strong>Add validation rules</strong> and run the validation</li>
+                <li><strong>View the results</strong> to see data quality violations</li>
+            </ol>
+        </div>
+
+        <div class="warning">
+            <h3>⚠️ Important Notes</h3>
+            <ul>
+                <li>This file contains <strong>intentional data quality issues</strong> for testing</li>
+                <li>You can open it in <strong>Excel, Google Sheets, or any text editor</strong></li>
+                <li>The file is <strong>UTF-8 encoded</strong> and should work on all systems</li>
+                <li>If download doesn't work, try <strong>right-click → Save As</strong></li>
+            </ul>
+        </div>
+
+        <div class="download-section">
+            <h3>🔗 Alternative Download Methods</h3>
+            <p>If the download buttons don't work, try these alternatives:</p>
+            <ul>
+                <li><strong>Right-click</strong> on the file name and select "Save As"</li>
+                <li><strong>Copy the file content</strong> and paste into a new CSV file</li>
+                <li><strong>Use the GitHub repository</strong> to download the raw file</li>
+            </ul>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="https://TonyStarkWiz.github.io/labops-metrics-starter-kit/" class="download-btn" style="background: #28a745;">
+                🚀 Go to Interactive Demo Site
+            </a>
+        </div>
+    </div>
+</body>
+</html>

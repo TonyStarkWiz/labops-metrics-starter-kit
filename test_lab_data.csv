@@ -1,0 +1,51 @@
+specimen_id,collection_date,test_type,department,tat_hours,status,priority,patient_age,result_value,units,technician_id,collection_time,processing_time,quality_score
+SP001,2024-01-15,CBC,Hematology,2.1,Completed,Routine,45,12.5,g/dL,T001,08:30,10:45,98.5
+SP002,2024-01-15,Chemistry Panel,Chemistry,1.8,Completed,Routine,32,140,mg/dL,T002,09:15,11:05,97.2
+SP003,2024-01-15,Blood Culture,Microbiology,48.0,In Progress,Urgent,67,,CFU/mL,T003,10:00,10:15,99.1
+SP004,2024-01-15,HIV Test,Immunology,3.2,Completed,Routine,28,Negative,,T001,11:30,14:45,96.8
+SP005,2024-01-15,CBC,Hematology,2.5,Completed,Routine,51,13.2,g/dL,T002,12:00,14:30,98.9
+SP006,2024-01-15,Urinalysis,Chemistry,1.5,Completed,Routine,39,6.8,pH,T003,13:15,14:45,97.5
+SP007,2024-01-15,Coagulation Panel,Hematology,4.2,Completed,Urgent,73,28,seconds,T001,14:00,18:15,98.2
+SP008,2024-01-15,Stool Culture,Microbiology,72.0,In Progress,Routine,44,,CFU/g,T002,15:30,15:45,99.0
+SP009,2024-01-15,Lipid Panel,Chemistry,2.8,Completed,Routine,56,185,mg/dL,T003,16:00,18:45,97.8
+SP010,2024-01-15,Thyroid Function,Immunology,3.5,Completed,Routine,41,2.4,mIU/L,T001,17:00,20:30,98.7
+SP011,2024-01-16,CBC,Hematology,2.0,Completed,Routine,29,11.8,g/dL,T002,08:00,10:00,98.1
+SP012,2024-01-16,Chemistry Panel,Chemistry,1.9,Completed,Routine,38,135,mg/dL,T003,08:30,10:20,97.9
+SP013,2024-01-16,Blood Culture,Microbiology,24.0,Completed,Urgent,71,Positive,CFU/mL,T001,09:00,09:15,99.3
+SP014,2024-01-16,HIV Test,Immunology,3.0,Completed,Routine,33,Negative,,T002,09:30,12:30,97.1
+SP015,2024-01-16,CBC,Hematology,2.3,Completed,Routine,47,12.1,g/dL,T003,10:00,12:15,98.4
+SP016,2024-01-16,Urinalysis,Chemistry,1.4,Completed,Routine,42,7.2,pH,T001,10:30,11:45,97.6
+SP017,2024-01-16,Coagulation Panel,Hematology,3.8,Completed,Urgent,69,32,seconds,T002,11:00,14:45,98.8
+SP018,2024-01-16,Stool Culture,Microbiology,48.0,In Progress,Routine,51,,CFU/g,T003,11:30,11:45,99.2
+SP019,2024-01-16,Lipid Panel,Chemistry,2.6,Completed,Routine,58,192,mg/dL,T001,12:00,14:30,97.4
+SP020,2024-01-16,Thyroid Function,Immunology,3.3,Completed,Routine,44,2.1,mIU/L,T002,12:30,15:45,98.5
+SP021,2024-01-17,CBC,Hematology,2.2,Completed,Routine,31,12.8,g/dL,T003,08:00,10:15,98.6
+SP022,2024-01-17,Chemistry Panel,Chemistry,1.7,Completed,Routine,36,138,mg/dL,T001,08:30,10:15,97.7
+SP023,2024-01-17,Blood Culture,Microbiology,36.0,Completed,Urgent,75,Positive,CFU/mL,T002,09:00,09:15,99.4
+SP024,2024-01-17,HIV Test,Immunology,3.1,Completed,Routine,30,Negative,,T003,09:30,12:45,97.3
+SP025,2024-01-17,CBC,Hematology,2.4,Completed,Routine,49,11.9,g/dL,T001,10:00,12:15,98.3
+SP026,2024-01-17,Urinalysis,Chemistry,1.6,Completed,Routine,40,6.9,pH,T002,10:30,12:00,97.8
+SP027,2024-01-17,Coagulation Panel,Hematology,4.0,Completed,Urgent,72,30,seconds,T003,11:00,15:00,98.9
+SP028,2024-01-17,Stool Culture,Microbiology,60.0,In Progress,Routine,53,,CFU/g,T001,11:30,11:45,99.1
+SP029,2024-01-17,Lipid Panel,Chemistry,2.9,Completed,Routine,60,188,mg/dL,T002,12:00,14:45,97.5
+SP030,2024-01-17,Thyroid Function,Immunology,3.4,Completed,Routine,46,2.3,mIU/L,T003,12:30,15:45,98.2
+SP031,2024-01-18,CBC,Hematology,2.1,Completed,Routine,27,12.3,g/dL,T001,08:00,10:15,98.7
+SP032,2024-01-18,Chemistry Panel,Chemistry,1.8,Completed,Routine,34,136,mg/dL,T002,08:30,10:15,97.9
+SP033,2024-01-18,Blood Culture,Microbiology,30.0,Completed,Urgent,68,Positive,CFU/mL,T003,09:00,09:15,99.2
+SP034,2024-01-18,HIV Test,Immunology,3.0,Completed,Routine,35,Negative,,T001,09:30,12:30,97.4
+SP035,2024-01-18,CBC,Hematology,2.2,Completed,Routine,52,12.5,g/dL,T002,10:00,12:15,98.1
+SP036,2024-01-18,Urinalysis,Chemistry,1.5,Completed,Routine,43,7.0,pH,T003,10:30,11:45,97.6
+SP037,2024-01-18,Coagulation Panel,Hematology,3.9,Completed,Urgent,70,31,seconds,T001,11:00,14:45,98.5
+SP038,2024-01-18,Stool Culture,Microbiology,54.0,In Progress,Routine,48,,CFU/g,T002,11:30,11:45,99.0
+SP039,2024-01-18,Lipid Panel,Chemistry,2.7,Completed,Routine,55,186,mg/dL,T003,12:00,14:30,97.8
+SP040,2024-01-18,Thyroid Function,Immunology,3.2,Completed,Routine,42,2.2,mIU/L,T001,12:30,15:45,98.6
+SP041,2024-01-19,CBC,Hematology,2.0,Completed,Routine,33,12.0,g/dL,T002,08:00,10:00,98.4
+SP042,2024-01-19,Chemistry Panel,Chemistry,1.9,Completed,Routine,37,137,mg/dL,T003,08:30,10:20,97.5
+SP043,2024-01-19,Blood Culture,Microbiology,42.0,Completed,Urgent,74,Positive,CFU/mL,T001,09:00,09:15,99.3
+SP044,2024-01-19,HIV Test,Immunology,3.3,Completed,Routine,29,Negative,,T002,09:30,12:45,97.2
+SP045,2024-01-19,CBC,Hematology,2.3,Completed,Routine,50,12.2,g/dL,T003,10:00,12:15,98.8
+SP046,2024-01-19,Urinalysis,Chemistry,1.4,Completed,Routine,41,6.7,pH,T001,10:30,11:45,97.9
+SP047,2024-01-19,Coagulation Panel,Hematology,4.1,Completed,Urgent,71,29,seconds,T002,11:00,15:00,98.7
+SP048,2024-01-19,Stool Culture,Microbiology,66.0,In Progress,Routine,52,,CFU/g,T003,11:30,11:45,99.1
+SP049,2024-01-19,Lipid Panel,Chemistry,2.8,Completed,Routine,57,189,mg/dL,T001,12:00,14:45,97.6
+SP050,2024-01-19,Thyroid Function,Immunology,3.1,Completed,Routine,45,2.0,mIU/L,T002,12:30,15:45,98.3
