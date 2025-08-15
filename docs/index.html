@@ -726,13 +726,21 @@
                         </div>
                     </div>
 
-                    <!-- Active Rules Display -->
-                    <div style="margin-top: 2rem;">
-                        <h3>📋 Active Validation Rules</h3>
-                        <div id="activeRules">
-                            <p style="color: #666; font-style: italic;">No rules added yet. Click the buttons above to add validation rules.</p>
-                        </div>
+                                    <!-- Active Rules Display -->
+                <div style="margin-top: 2rem;">
+                    <h3>📋 Active Validation Rules</h3>
+                    <div id="activeRules">
+                        <p style="color: #666; font-style: italic;">No rules added yet. Click the buttons above to add validation rules.</p>
                     </div>
+                </div>
+
+                <!-- Data Preview -->
+                <div style="margin-top: 2rem;">
+                    <h3>📊 Data Preview</h3>
+                    <div id="dataPreview">
+                        <p style="color: #666; font-style: italic;">Upload a CSV file to see data preview</p>
+                    </div>
+                </div>
 
                     <!-- Custom Rule Builder -->
                     <div style="margin-top: 2rem;">
@@ -974,8 +982,11 @@
             }
 
             try {
+                console.log('Processing data for charts:', currentData);
+                
                 // Process the data for charts
                 const processedData = processDataForCharts(currentData);
+                console.log('Processed data:', processedData);
                 
                 // Update TAT Chart
                 if (charts.tat) {
@@ -1005,21 +1016,29 @@
                 
             } catch (error) {
                 console.error('Error updating charts:', error);
+                console.error('Current data:', currentData);
                 showAlert('Error updating charts: ' + error.message, 'error');
             }
         }
 
         // Process uploaded data for chart visualization
         function processDataForCharts(data) {
-            // Skip header row if present
-            const cleanData = data.filter(row => 
-                row.specimen_id && 
-                row.specimen_id !== 'specimen_id' && 
-                typeof row.tat_hours === 'number' || !isNaN(parseFloat(row.tat_hours))
-            );
+            // Skip header row if present and filter out invalid rows
+            const cleanData = data.filter(row => {
+                // Skip header row
+                if (row.specimen_id === 'specimen_id') return false;
+                
+                // Check if row has essential data
+                return row.specimen_id && 
+                       row.collection_date && 
+                       row.department && 
+                       row.tat_hours !== undefined && 
+                       row.tat_hours !== null && 
+                       row.tat_hours !== '';
+            });
 
             if (cleanData.length === 0) {
-                throw new Error('No valid data found for charting');
+                throw new Error('No valid data found for charting. Please ensure your CSV has specimen_id, collection_date, department, and tat_hours columns with valid data.');
             }
 
             // Group by date
@@ -1029,7 +1048,13 @@
             cleanData.forEach(row => {
                 const date = row.collection_date || 'Unknown';
                 const dept = row.department || 'Unknown';
-                const tat = parseFloat(row.tat_hours) || 0;
+                const tat = parseFloat(row.tat_hours);
+                
+                // Skip rows with invalid TAT values
+                if (isNaN(tat)) {
+                    console.warn('Skipping row with invalid TAT:', row);
+                    return;
+                }
                 
                 if (!dateGroups[date]) {
                     dateGroups[date] = { total: 0, count: 0, tatSum: 0 };
@@ -1110,6 +1135,44 @@
             }
         }
 
+        // Update data preview display
+        function updateDataPreview(data) {
+            const previewContainer = document.getElementById('dataPreview');
+            if (!previewContainer) return;
+            
+            if (!data || data.length === 0) {
+                previewContainer.innerHTML = '<p style="color: #666; font-style: italic;">No data available</p>';
+                return;
+            }
+            
+            // Show first 5 rows as preview
+            const previewRows = data.slice(0, 5);
+            const previewHtml = `
+                <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                    <p><strong>Total Records:</strong> ${data.length}</p>
+                    <p><strong>Columns:</strong> ${Object.keys(data[0] || {}).join(', ')}</p>
+                </div>
+                <div style="background: white; border: 1px solid #dee2e6; border-radius: 8px; overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                        <thead>
+                            <tr style="background: #f8f9fa;">
+                                ${Object.keys(previewRows[0] || {}).map(col => `<th style="padding: 0.5rem; text-align: left; border: 1px solid #dee2e6;">${col}</th>`).join('')}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${previewRows.map(row => `
+                                <tr>
+                                    ${Object.values(row).map(val => `<td style="padding: 0.5rem; border: 1px solid #dee2e6;">${val || ''}</td>`).join('')}
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            previewContainer.innerHTML = previewHtml;
+        }
+
         // Set current date in Teams Bot form
         function setCurrentDate() {
             const today = new Date().toISOString().split('T')[0];
@@ -1142,6 +1205,7 @@
                         if (results.data && results.data.length > 0) {
                             currentData = results.data;
                             updateDataStatus(`CSV uploaded: ${results.data.length} records`);
+                            updateDataPreview(results.data);
                             showAlert('CSV file uploaded successfully!', 'success');
                             // Update dashboard charts with new data
                             updateDashboardCharts();
