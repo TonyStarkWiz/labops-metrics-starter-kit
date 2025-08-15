@@ -5,30 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LabOps Metrics Starter Kit - Interactive Demo</title>
     <meta name="description" content="Interactive demo of laboratory operations metrics and analytics platform with Data Quality Rules Engine and Teams Stand-up Bot">
-    <meta name="keywords" content="labops, laboratory, metrics, analytics, data quality, teams bot, interactive demo">
-    <meta name="author" content="LabOps Team">
     
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://TonyStarkWiz.github.io/labops-metrics-starter-kit/">
-    <meta property="og:title" content="LabOps Metrics Starter Kit - Interactive Demo">
-    <meta property="og:description" content="Try the interactive demo of our laboratory operations platform">
-    <meta property="og:image" content="https://TonyStarkWiz.github.io/labops-metrics-starter-kit/assets/images/labops-banner.png">
-
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://TonyStarkWiz.github.io/labops-metrics-starter-kit/">
-    <meta property="twitter:title" content="LabOps Metrics Starter Kit - Interactive Demo">
-    <meta property="twitter:description" content="Try the interactive demo of our laboratory operations platform">
-    <meta property="twitter:image" content="https://TonyStarkWiz.github.io/labops-metrics-starter-kit/assets/images/labops-banner.png">
-
     <!-- Chart.js for interactive charts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <!-- Papa Parse for CSV handling -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     
-    <!-- CSS -->
     <style>
         * {
             margin: 0;
@@ -37,7 +20,7 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             line-height: 1.6;
             color: #333;
             background: #f8f9fa;
@@ -49,7 +32,6 @@
             padding: 0 20px;
         }
 
-        /* Header */
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -101,7 +83,6 @@
             background: rgba(255, 255, 255, 0.1);
         }
 
-        /* Main Content */
         .main-content {
             padding: 2rem 0;
         }
@@ -120,7 +101,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Dashboard Section */
         .dashboard-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -168,166 +148,6 @@
             text-align: center;
         }
 
-        /* Data Quality Section */
-        .dq-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-            margin-bottom: 2rem;
-        }
-
-        .dq-panel {
-            background: white;
-            padding: 2rem;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .dq-panel h3 {
-            margin-bottom: 1rem;
-            color: #333;
-        }
-
-        .file-upload {
-            border: 2px dashed #ddd;
-            border-radius: 10px;
-            padding: 2rem;
-            text-align: center;
-            cursor: pointer;
-            transition: border-color 0.3s ease;
-            margin-bottom: 1rem;
-        }
-
-        .file-upload:hover {
-            border-color: #667eea;
-        }
-
-        .file-upload.dragover {
-            border-color: #667eea;
-            background: rgba(102, 126, 234, 0.1);
-        }
-
-        .rule-builder {
-            margin-top: 1rem;
-        }
-
-        .rule-item {
-            background: #f8f9fa;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-            border-left: 4px solid #667eea;
-        }
-
-        .rule-item h4 {
-            margin-bottom: 0.5rem;
-            color: #333;
-        }
-
-        .rule-item p {
-            color: #666;
-            font-size: 0.9rem;
-        }
-
-        .rule-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.5rem;
-        }
-
-        .rule-type {
-            font-weight: 600;
-            color: #28a745;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-        }
-
-        .rule-details {
-            color: #333;
-            font-size: 0.9rem;
-        }
-
-        .rule-item.active {
-            border-left-color: #28a745;
-            background: #f8fff9;
-        }
-
-        .rule-checkbox {
-            display: flex;
-            align-items: flex-start;
-            gap: 0.75rem;
-            padding: 1rem;
-            background: #f8f9fa;
-            border-radius: 8px;
-            border: 2px solid transparent;
-            transition: all 0.3s ease;
-        }
-
-        .rule-checkbox:hover {
-            background: #e9ecef;
-            border-color: #667eea;
-        }
-
-        .rule-checkbox input[type="checkbox"] {
-            margin-top: 0.25rem;
-            transform: scale(1.2);
-            accent-color: #667eea;
-        }
-
-        .rule-checkbox label {
-            cursor: pointer;
-            flex: 1;
-        }
-
-        .rule-checkbox.checked {
-            background: #e8f5e8;
-            border-color: #28a745;
-        }
-
-        /* Teams Bot Section */
-        .teams-container {
-            background: white;
-            padding: 2rem;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            margin-bottom: 2rem;
-        }
-
-        .standup-form {
-            display: grid;
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .form-group label {
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-            color: #333;
-        }
-
-        .form-group input,
-        .form-group textarea,
-        .form-group select {
-            padding: 0.75rem;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: border-color 0.3s ease;
-        }
-
-        .form-group input:focus,
-        .form-group textarea:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
         .btn {
             padding: 0.75rem 1.5rem;
             border: none;
@@ -360,182 +180,6 @@
             background: #5a6268;
         }
 
-        .btn-success {
-            background: #28a745;
-            color: white;
-        }
-
-        .btn-success:hover {
-            background: #218838;
-        }
-
-        .message-preview {
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            padding: 1rem;
-            margin-top: 1rem;
-        }
-
-        .message-preview h4 {
-            margin-bottom: 0.5rem;
-            color: #333;
-        }
-
-        .message-preview .content {
-            background: white;
-            padding: 1rem;
-            border-radius: 5px;
-            border-left: 4px solid #667eea;
-        }
-
-        /* Results Section */
-        .results-container {
-            background: white;
-            padding: 2rem;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            margin-bottom: 2rem;
-        }
-
-        .results-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-
-        .results-title {
-            font-size: 1.5rem;
-            color: #333;
-        }
-
-        .results-actions {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .violation-item {
-            background: #fff5f5;
-            border: 1px solid #fed7d7;
-            border-radius: 8px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .violation-item.error {
-            background: #fff5f5;
-            border-color: #fed7d7;
-        }
-
-        .violation-item.warning {
-            background: #fffbeb;
-            border-color: #fef3c7;
-        }
-
-        .violation-item.info {
-            background: #eff6ff;
-            border-color: #bfdbfe;
-        }
-
-        .violation-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.5rem;
-        }
-
-        .violation-type {
-            font-weight: 600;
-            color: #e53e3e;
-        }
-
-        .violation-type.warning {
-            color: #d69e2e;
-        }
-
-        .violation-type.info {
-            color: #3182ce;
-        }
-
-        .violation-details {
-            color: #666;
-            font-size: 0.9rem;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .dq-container {
-                grid-template-columns: 1fr;
-            }
-            
-            .nav-tabs {
-                flex-direction: column;
-                background: transparent;
-                padding: 0;
-            }
-            
-            .nav-tab {
-                border-radius: 8px;
-                margin-bottom: 0.5rem;
-            }
-        }
-
-        /* Loading States */
-        .loading {
-            text-align: center;
-            padding: 2rem;
-            color: #666;
-        }
-
-        .spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 1rem;
-        }
-
-        /* Dashboard Actions */
-        .dashboard-actions {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .data-status {
-            padding: 0.5rem 1rem;
-            background: #f8f9fa;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            border: 1px solid #e9ecef;
-        }
-
-        #refreshChartsBtn {
-            background: #667eea;
-            border: none;
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: background 0.3s;
-        }
-
-        #refreshChartsBtn:hover {
-            background: #5a6fd8;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* Success/Error Messages */
         .alert {
             padding: 1rem;
             border-radius: 8px;
@@ -558,6 +202,12 @@
             background: #d1ecf1;
             border: 1px solid #bee5eb;
             color: #0c5460;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
         }
     </style>
 </head>
@@ -632,116 +282,27 @@
             <div id="data-quality" class="tab-content">
                 <h2 style="text-align: center; margin-bottom: 2rem; color: #333;">🔍 Data Quality Rules Engine</h2>
                 
-                <div class="dq-container">
-                    <!-- CSV Upload Panel -->
-                    <div class="dq-panel">
-                        <h3>📁 Upload CSV Data</h3>
-                        <div class="file-upload" id="fileUpload" onclick="document.getElementById('csvFile').click()">
-                            <p>📤 Click to upload CSV or drag & drop</p>
-                            <p style="font-size: 0.9rem; color: #666;">Supports: .csv files</p>
-                        </div>
-                        <input type="file" id="csvFile" accept=".csv" style="display: none;" onchange="handleCSVUpload(event)">
-                        
-                        <div id="sampleDataSection" style="margin-top: 1rem;">
-                            <p style="margin-bottom: 1rem; color: #666;">Or use sample data:</p>
-                            <button class="btn btn-secondary" onclick="loadSampleData()">📊 Load Sample Lab Data</button>
-                        </div>
+                <div style="background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); margin-bottom: 2rem;">
+                    <h3>📁 Upload CSV Data</h3>
+                    <div style="border: 2px dashed #ddd; border-radius: 10px; padding: 2rem; text-align: center; cursor: pointer; margin-bottom: 1rem;" onclick="document.getElementById('csvFile').click()">
+                        <p>📤 Click to upload CSV or drag & drop</p>
+                        <p style="font-size: 0.9rem; color: #666;">Supports: .csv files</p>
                     </div>
-
-                    <!-- Rules Configuration Panel -->
-                    <div class="dq-panel">
-                        <h3>⚙️ Data Quality Rules</h3>
-                        
-                        <!-- Rule Upload Section -->
-                        <div style="margin-bottom: 2rem;">
-                            <h4 style="margin-bottom: 1rem; color: #333;">📁 Upload Rules File</h4>
-                            <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px;">
-                                <p style="margin-bottom: 1rem; color: #666; font-size: 0.9rem;">Upload a JSON or YAML file with your data quality rules</p>
-                                <input type="file" id="rulesFile" accept=".json,.yaml,.yml" style="margin-bottom: 1rem;">
-                                <button class="btn btn-secondary" onclick="uploadRulesFile()">📤 Upload Rules</button>
-                                <button class="btn btn-secondary" onclick="downloadSampleRules()" style="margin-left: 0.5rem;">📥 Download Sample</button>
-                            </div>
-                        </div>
-
-                        <!-- Quick Rule Selection -->
-                        <div style="margin-bottom: 2rem;">
-                            <h4 style="margin-bottom: 1rem; color: #333;">✅ Quick Rule Selection</h4>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                                <div class="rule-checkbox">
-                                    <input type="checkbox" id="rule-required" onchange="toggleRule('required_columns')">
-                                    <label for="rule-required">
-                                        <strong>Required Columns</strong><br>
-                                        <span style="font-size: 0.9rem; color: #666;">Ensures all mandatory columns are present</span>
-                                    </label>
-                                </div>
-                                <div class="rule-checkbox">
-                                    <input type="checkbox" id="rule-datatype" onchange="toggleRule('data_type')">
-                                    <label for="rule-datatype">
-                                        <strong>Data Type Validation</strong><br>
-                                        <span style="font-size: 0.9rem; color: #666;">Validates data types for each column</span>
-                                    </label>
-                                </div>
-                                <div class="rule-checkbox">
-                                    <input type="checkbox" id="rule-range" onchange="toggleRule('range')">
-                                    <label for="rule-range">
-                                        <strong>Range Validation</strong><br>
-                                        <span style="font-size: 0.9rem; color: #666;">Checks values are within acceptable ranges</span>
-                                    </label>
-                                </div>
-                                <div class="rule-checkbox">
-                                    <input type="checkbox" id="rule-completeness" onchange="toggleRule('completeness')">
-                                    <label for="rule-completeness">
-                                        <strong>Completeness Check</strong><br>
-                                        <span style="font-size: 0.9rem; color: #666;">Ensures no missing values in critical fields</span>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Manual Rule Builder -->
-                        <div>
-                            <h4 style="margin-bottom: 1rem; color: #333;">🔧 Manual Rule Builder</h4>
-                            <div class="rule-builder">
-                                <div class="rule-item">
-                                    <h4>Required Columns</h4>
-                                    <p>Ensures all mandatory columns are present</p>
-                                    <button class="btn btn-primary" onclick="addRequiredColumnsRule()">Add Rule</button>
-                                </div>
-                                <div class="rule-item">
-                                    <h4>Data Type Validation</h4>
-                                    <p>Validates data types for each column</p>
-                                    <button class="btn btn-primary" onclick="addDataTypeRule()">Add Rule</button>
-                                </div>
-                                <div class="rule-item">
-                                    <h4>Range Validation</h4>
-                                    <p>Checks values are within acceptable ranges</p>
-                                    <button class="btn btn-primary" onclick="addRangeRule()">Add Rule</button>
-                                </div>
-                                <div class="rule-item">
-                                    <h4>Completeness Check</h4>
-                                    <p>Ensures no missing values in critical fields</p>
-                                    <button class="btn btn-primary" onclick="addCompletenessRule()">Add Rule</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                                    <!-- Active Rules Display -->
-                <div style="margin-top: 2rem;">
-                    <h3>📋 Active Validation Rules</h3>
-                    <div id="activeRules">
-                        <p style="color: #666; font-style: italic;">No rules added yet. Click the buttons above to add validation rules.</p>
+                    <input type="file" id="csvFile" accept=".csv" style="display: none;" onchange="handleCSVUpload(event)">
+                    
+                    <div style="margin-top: 1rem;">
+                        <p style="margin-bottom: 1rem; color: #666;">Or use sample data:</p>
+                        <button class="btn btn-secondary" onclick="loadSampleData()">📊 Load Sample Lab Data</button>
                     </div>
                 </div>
 
                 <!-- Data Preview -->
-                <div style="margin-top: 2rem;">
+                <div style="background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); margin-bottom: 2rem;">
                     <h3>📊 Data Preview</h3>
                     <div id="dataPreview">
                         <p style="color: #666; font-style: italic;">Upload a CSV file to see data preview</p>
                     </div>
                     
-                    <!-- Manual Chart Update -->
                     <div style="margin-top: 1rem; text-align: center;">
                         <button class="btn btn-primary" onclick="forceUpdateCharts()" style="margin-right: 1rem;">
                             🔄 Force Update Charts
@@ -751,97 +312,41 @@
                         </button>
                     </div>
                 </div>
-
-                    <!-- Custom Rule Builder -->
-                    <div style="margin-top: 2rem;">
-                        <h3>🔧 Custom Rule Builder</h3>
-                        <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px;">
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
-                                <div>
-                                    <label style="font-weight: 500; margin-bottom: 0.5rem; display: block;">Rule Type:</label>
-                                    <select id="customRuleType" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
-                                        <option value="custom_range">Custom Range</option>
-                                        <option value="custom_completeness">Custom Completeness</option>
-                                        <option value="custom_format">Custom Format</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label style="font-weight: 500; margin-bottom: 0.5rem; display: block;">Column Name:</label>
-                                    <input type="text" id="customColumn" placeholder="e.g., tat_hours" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
-                                </div>
-                            </div>
-                            <div id="customRuleParams" style="margin-bottom: 1rem;">
-                                <!-- Dynamic parameters will be inserted here -->
-                            </div>
-                            <button class="btn btn-primary" onclick="addCustomRule()">➕ Add Custom Rule</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-                <!-- Validation Results -->
-                <div id="validationResults" class="results-container" style="display: none;">
-                    <div class="results-header">
-                        <h3 class="results-title">🔍 Validation Results</h3>
-                        <div class="results-actions">
-                            <button class="btn btn-secondary" onclick="exportResults()">📥 Export Results</button>
-                            <button class="btn btn-success" onclick="clearResults()">🧹 Clear</button>
-                        </div>
-                    </div>
-                    <div id="violationsList"></div>
-                </div>
-
-                <!-- Run Validation Button -->
-                <div style="text-align: center; margin-top: 2rem;">
-                    <button class="btn btn-primary" onclick="runValidation()" id="runValidationBtn" style="font-size: 1.2rem; padding: 1rem 2rem;">
-                        🚀 Run Data Quality Validation
-                    </button>
-                </div>
             </div>
 
             <!-- Teams Bot Tab -->
             <div id="teams-bot" class="tab-content">
                 <h2 style="text-align: center; margin-bottom: 2rem; color: #333;">🤖 Microsoft Teams Stand-up Bot</h2>
                 
-                <div class="teams-container">
+                <div style="background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); margin-bottom: 2rem;">
                     <h3>📝 Create Stand-up Update</h3>
                     
-                    <form class="standup-form" id="standupForm">
-                        <div class="form-group">
-                            <label for="teamName">Team Name</label>
-                            <input type="text" id="teamName" value="Lab Operations Team" required>
+                    <div style="display: grid; gap: 1rem; margin-bottom: 2rem;">
+                        <div>
+                            <label style="font-weight: 500; margin-bottom: 0.5rem; display: block;">Team Name</label>
+                            <input type="text" id="teamName" value="Lab Operations Team" required style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 8px;">
                         </div>
                         
-                        <div class="form-group">
-                            <label for="date">Date</label>
-                            <input type="date" id="date" required>
+                        <div>
+                            <label style="font-weight: 500; margin-bottom: 0.5rem; display: block;">Date</label>
+                            <input type="date" id="date" required style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 8px;">
                         </div>
                         
-                        <div class="form-group">
-                            <label for="yesterday">What did you accomplish yesterday?</label>
-                            <textarea id="yesterday" rows="3" placeholder="List your key achievements from yesterday..." required></textarea>
+                        <div>
+                            <label style="font-weight: 500; margin-bottom: 0.5rem; display: block;">What did you accomplish yesterday?</label>
+                            <textarea id="yesterday" rows="3" placeholder="List your key achievements from yesterday..." required style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 8px;"></textarea>
                         </div>
                         
-                        <div class="form-group">
-                            <label for="today">What will you work on today?</label>
-                            <textarea id="today" rows="3" placeholder="Outline your priorities for today..." required></textarea>
+                        <div>
+                            <label style="font-weight: 500; margin-bottom: 0.5rem; display: block;">What will you work on today?</label>
+                            <textarea id="today" rows="3" placeholder="Outline your priorities for today..." required style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 8px;"></textarea>
                         </div>
                         
-                        <div class="form-group">
-                            <label for="blockers">Any blockers or challenges?</label>
-                            <textarea id="blockers" rows="2" placeholder="Describe any issues preventing progress..."></textarea>
+                        <div>
+                            <label style="font-weight: 500; margin-bottom: 0.5rem; display: block;">Any blockers or challenges?</label>
+                            <textarea id="blockers" rows="2" placeholder="Describe any issues preventing progress..." style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 8px;"></textarea>
                         </div>
-                        
-                        <div class="form-group">
-                            <label for="template">Template Style</label>
-                            <select id="template">
-                                <option value="professional">Professional</option>
-                                <option value="casual">Casual</option>
-                                <option value="detailed">Detailed</option>
-                                <option value="concise">Concise</option>
-                            </select>
-                        </div>
-                    </form>
+                    </div>
 
                     <div style="text-align: center; margin: 2rem 0;">
                         <button class="btn btn-primary" onclick="previewMessage()">👀 Preview Message</button>
@@ -850,9 +355,9 @@
                     </div>
 
                     <!-- Message Preview -->
-                    <div id="messagePreview" class="message-preview" style="display: none;">
+                    <div id="messagePreview" style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 1rem; margin-top: 1rem; display: none;">
                         <h4>📱 Teams Message Preview</h4>
-                        <div class="content" id="previewContent"></div>
+                        <div id="previewContent" style="background: white; padding: 1rem; border-radius: 5px; border-left: 4px solid #667eea;"></div>
                     </div>
 
                     <!-- Success Message -->
@@ -864,11 +369,9 @@
         </div>
     </main>
 
-    <!-- JavaScript -->
     <script>
         // Global variables
         let currentData = null;
-        let currentRules = [];
         let charts = {};
 
         // Initialize the demo
@@ -1073,7 +576,6 @@
         
         // Process clean data for charts
         function processCleanDataForCharts(cleanData) {
-
             console.log('Clean data after filtering:', cleanData);
 
             if (cleanData.length === 0) {
@@ -1208,16 +710,6 @@
                             `).join('')}
                         </tbody>
                     </table>
-                </div>
-                
-                <!-- Manual Chart Update -->
-                <div style="margin-top: 1rem; text-align: center;">
-                    <button class="btn btn-primary" onclick="forceUpdateCharts()" style="margin-right: 1rem;">
-                        🔄 Force Update Charts
-                    </button>
-                    <button class="btn btn-secondary" onclick="showDataDebug()">
-                        🐛 Show Data Debug
-                    </button>
                 </div>
             `;
             
@@ -1382,587 +874,13 @@
             }
         }
 
-        // Add data quality rules
-        function addRequiredColumnsRule() {
-            const rule = {
-                type: 'required_columns',
-                name: 'Required Columns',
-                description: 'Ensures all mandatory columns are present',
-                columns: ['specimen_id', 'collection_date', 'test_type', 'department']
-            };
-            currentRules.push(rule);
-            updateRulesDisplay();
-            showAlert('Required columns rule added!', 'info');
-        }
-
-        function addDataTypeRule() {
-            const rule = {
-                type: 'data_type',
-                name: 'Data Type Validation',
-                description: 'Validates data types for each column',
-                rules: {
-                    specimen_id: 'string',
-                    collection_date: 'date',
-                    tat_hours: 'number',
-                    patient_age: 'number',
-                    quality_score: 'number'
-                }
-            };
-            currentRules.push(rule);
-            updateRulesDisplay();
-            showAlert('Data type validation rule added!', 'info');
-        }
-
-        function addRangeRule() {
-            const rule = {
-                type: 'range',
-                name: 'Range Validation',
-                description: 'Checks values are within acceptable ranges',
-                rules: {
-                    tat_hours: { min: 0, max: 72 },
-                    patient_age: { min: 0, max: 120 },
-                    quality_score: { min: 0, max: 100 }
-                }
-            };
-            currentRules.push(rule);
-            updateRulesDisplay();
-            showAlert('Range validation rule added!', 'info');
-        }
-
-        function addCompletenessRule() {
-            const rule = {
-                type: 'completeness',
-                name: 'Completeness Check',
-                description: 'Ensures no missing values in critical fields',
-                columns: ['specimen_id', 'test_type', 'department', 'tat_hours']
-            };
-            currentRules.push(rule);
-            updateRulesDisplay();
-            showAlert('Completeness check rule added!', 'info');
-        }
-
-        // Update rules display
-        function updateRulesDisplay() {
-            const rulesContainer = document.getElementById('activeRules');
-            if (!rulesContainer) return;
-            
-            if (currentRules.length === 0) {
-                rulesContainer.innerHTML = '<p style="color: #666; font-style: italic;">No rules added yet. Click the buttons above to add validation rules.</p>';
-                return;
-            }
-            
-            rulesContainer.innerHTML = currentRules.map((rule, index) => `
-                <div class="rule-item active" style="border-left-color: #28a745;">
-                    <div class="rule-header">
-                        <span class="rule-type">${rule.type.toUpperCase()}</span>
-                        <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8rem;" onclick="removeRule(${index})">Remove</button>
-                    </div>
-                    <div class="rule-details">
-                        <strong>${rule.name}</strong><br>
-                        ${rule.description}
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // Remove rule
-        function removeRule(index) {
-            currentRules.splice(index, 1);
-            updateRulesDisplay();
-            showAlert('Rule removed!', 'info');
-        }
-
-        // Custom rule builder
-        function updateCustomRuleParams() {
-            const ruleType = document.getElementById('customRuleType').value;
-            const paramsContainer = document.getElementById('customRuleParams');
-            
-            let html = '';
-            switch(ruleType) {
-                case 'custom_range':
-                    html = `
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                            <div>
-                                <label style="font-weight: 500; margin-bottom: 0.5rem; display: block;">Minimum Value:</label>
-                                <input type="number" id="customMin" placeholder="0" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
-                            </div>
-                            <div>
-                                <label style="font-weight: 500; margin-bottom: 0.5rem; display: block;">Maximum Value:</label>
-                                <input type="number" id="customMax" placeholder="100" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
-                            </div>
-                        </div>
-                    `;
-                    break;
-                case 'custom_completeness':
-                    html = `
-                        <div>
-                            <label style="font-weight: 500; margin-bottom: 0.5rem; display: block;">Required Columns (comma-separated):</label>
-                            <input type="text" id="customColumns" placeholder="specimen_id, test_type, department" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
-                        </div>
-                    `;
-                    break;
-                case 'custom_format':
-                    html = `
-                        <div>
-                            <label style="font-weight: 500; margin-bottom: 0.5rem; display: block;">Expected Format:</label>
-                            <select id="customFormat" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
-                                <option value="email">Email Address</option>
-                                <option value="phone">Phone Number</option>
-                                <option value="date">Date (YYYY-MM-DD)</option>
-                                <option value="time">Time (HH:MM)</option>
-                                <option value="numeric">Numeric Only</option>
-                                <option value="alphanumeric">Alphanumeric</option>
-                            </select>
-                        </div>
-                    `;
-                    break;
-            }
-            paramsContainer.innerHTML = html;
-        }
-
-        function addCustomRule() {
-            const ruleType = document.getElementById('customRuleType').value;
-            const column = document.getElementById('customColumn').value.trim();
-            
-            if (!column) {
-                showAlert('Please enter a column name!', 'error');
-                return;
-            }
-            
-            let rule;
-            switch(ruleType) {
-                case 'custom_range':
-                    const min = parseFloat(document.getElementById('customMin').value);
-                    const max = parseFloat(document.getElementById('customMax').value);
-                    if (isNaN(min) || isNaN(max)) {
-                        showAlert('Please enter valid min and max values!', 'error');
-                        return;
-                    }
-                    rule = {
-                        type: 'custom_range',
-                        name: `Custom Range: ${column}`,
-                        description: `Ensures ${column} is between ${min} and ${max}`,
-                        column: column,
-                        min: min,
-                        max: max
-                    };
-                    break;
-                case 'custom_completeness':
-                    const columns = document.getElementById('customColumns').value.split(',').map(c => c.trim()).filter(c => c);
-                    if (columns.length === 0) {
-                        showAlert('Please enter at least one column name!', 'error');
-                        return;
-                    }
-                    rule = {
-                        type: 'custom_completeness',
-                        name: `Custom Completeness: ${columns.join(', ')}`,
-                        description: `Ensures no missing values in columns: ${columns.join(', ')}`,
-                        columns: columns
-                    };
-                    break;
-                case 'custom_format':
-                    const format = document.getElementById('customFormat').value;
-                    rule = {
-                        type: 'custom_format',
-                        name: `Custom Format: ${column}`,
-                        description: `Validates ${column} format: ${format}`,
-                        column: column,
-                        format: format
-                    };
-                    break;
-            }
-            
-            if (rule) {
-                currentRules.push(rule);
-                updateRulesDisplay();
-                showAlert('Custom rule added successfully!', 'success');
-                // Clear form
-                document.getElementById('customColumn').value = '';
-                document.getElementById('customRuleParams').innerHTML = '';
-            }
-        }
-
-        // Format validation helper
-        function validateFormat(value, format) {
-            switch(format) {
-                case 'email':
-                    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-                case 'phone':
-                    return /^[\+]?[1-9][\d]{0,15}$/.test(value.replace(/[\s\-\(\)]/g, ''));
-                case 'date':
-                    return /^\d{4}-\d{2}-\d{2}$/.test(value);
-                case 'time':
-                    return /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(value);
-                case 'numeric':
-                    return /^\d+(\.\d+)?$/.test(value);
-                case 'alphanumeric':
-                    return /^[a-zA-Z0-9\s]+$/.test(value);
-                default:
-                    return true;
-            }
-        }
-
-        // Toggle rule based on checkbox
-        function toggleRule(ruleType) {
-            const checkbox = document.getElementById(`rule-${ruleType.split('_')[1]}`);
-            const isChecked = checkbox.checked;
-            
-            if (isChecked) {
-                // Add rule
-                switch(ruleType) {
-                    case 'required_columns':
-                        addRequiredColumnsRule();
-                        break;
-                    case 'data_type':
-                        addDataTypeRule();
-                        break;
-                    case 'range':
-                        addRangeRule();
-                        break;
-                    case 'completeness':
-                        addCompletenessRule();
-                        break;
-                }
-                checkbox.parentElement.classList.add('checked');
-            } else {
-                // Remove rule
-                const ruleIndex = currentRules.findIndex(rule => rule.type === ruleType);
-                if (ruleIndex !== -1) {
-                    currentRules.splice(ruleIndex, 1);
-                    updateRulesDisplay();
-                    showAlert('Rule removed!', 'info');
-                }
-                checkbox.parentElement.classList.remove('checked');
-            }
-        }
-
-        // Upload rules file
-        function uploadRulesFile() {
-            const fileInput = document.getElementById('rulesFile');
-            const file = fileInput.files[0];
-            
-            if (!file) {
-                showAlert('Please select a rules file first!', 'error');
-                return;
-            }
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    let rules;
-                    if (file.name.endsWith('.json')) {
-                        rules = JSON.parse(e.target.result);
-                    } else if (file.name.endsWith('.yaml') || file.name.endsWith('.yml')) {
-                        // Simple YAML parsing for basic rules
-                        rules = parseSimpleYAML(e.target.result);
-                    } else {
-                        showAlert('Unsupported file format. Please use JSON or YAML.', 'error');
-                        return;
-                    }
-                    
-                    if (Array.isArray(rules)) {
-                        currentRules = rules;
-                        updateRulesDisplay();
-                        updateCheckboxesFromRules();
-                        showAlert(`Successfully loaded ${rules.length} rules!`, 'success');
-                    } else {
-                        showAlert('Invalid rules format. File should contain an array of rules.', 'error');
-                    }
-                } catch (error) {
-                    showAlert('Error parsing rules file: ' + error.message, 'error');
-                }
-            };
-            reader.readAsText(file);
-        }
-
-        // Parse simple YAML (basic implementation)
-        function parseSimpleYAML(yamlText) {
-            const rules = [];
-            const lines = yamlText.split('\n');
-            let currentRule = null;
-            
-            for (let line of lines) {
-                line = line.trim();
-                if (line.startsWith('- type:')) {
-                    if (currentRule) rules.push(currentRule);
-                    currentRule = { type: line.split(':')[1].trim() };
-                } else if (line.includes(':') && currentRule) {
-                    const [key, value] = line.split(':').map(s => s.trim());
-                    if (key === 'columns' && value.includes('[')) {
-                        currentRule[key] = value.replace(/[\[\]]/g, '').split(',').map(s => s.trim());
-                    } else if (key === 'rules' && value.includes('{')) {
-                        // Parse nested rules object
-                        const rulesText = value.replace(/[{}]/g, '');
-                        const rulesObj = {};
-                        rulesText.split(',').forEach(rule => {
-                            const [k, v] = rule.split(':').map(s => s.trim());
-                            if (k && v) rulesObj[k] = v;
-                        });
-                        currentRule[key] = rulesObj;
-                    } else {
-                        currentRule[key] = value;
-                    }
-                }
-            }
-            
-            if (currentRule) rules.push(currentRule);
-            return rules;
-        }
-
-        // Download sample rules
-        function downloadSampleRules() {
-            const sampleRules = [
-                {
-                    type: 'required_columns',
-                    name: 'Required Columns',
-                    description: 'Ensures all mandatory columns are present',
-                    columns: ['specimen_id', 'collection_date', 'test_type', 'department']
-                },
-                {
-                    type: 'data_type',
-                    name: 'Data Type Validation',
-                    description: 'Validates data types for each column',
-                    rules: {
-                        specimen_id: 'string',
-                        collection_date: 'date',
-                        tat_hours: 'number'
-                    }
-                },
-                {
-                    type: 'range',
-                    name: 'Range Validation',
-                    description: 'Checks values are within acceptable ranges',
-                    rules: {
-                        tat_hours: { min: 0, max: 72 }
-                    }
-                },
-                {
-                    type: 'completeness',
-                    name: 'Completeness Check',
-                    description: 'Ensures no missing values in critical fields',
-                    columns: ['specimen_id', 'test_type', 'department']
-                }
-            ];
-            
-            const blob = new Blob([JSON.stringify(sampleRules, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'sample_data_quality_rules.json';
-            a.click();
-            URL.revokeObjectURL(url);
-        }
-
-        // Update checkboxes based on current rules
-        function updateCheckboxesFromRules() {
-            const checkboxes = {
-                'required_columns': 'rule-required',
-                'data_type': 'rule-datatype',
-                'range': 'rule-range',
-                'completeness': 'rule-completeness'
-            };
-            
-            Object.entries(checkboxes).forEach(([ruleType, checkboxId]) => {
-                const checkbox = document.getElementById(checkboxId);
-                const hasRule = currentRules.some(rule => rule.type === ruleType);
-                checkbox.checked = hasRule;
-                checkbox.parentElement.classList.toggle('checked', hasRule);
-            });
-        }
-
-        // Initialize custom rule builder
-        document.addEventListener('DOMContentLoaded', function() {
-            const customRuleType = document.getElementById('customRuleType');
-            if (customRuleType) {
-                customRuleType.addEventListener('change', updateCustomRuleParams);
-                updateCustomRuleParams(); // Initial load
-            }
-        });
-
-        // Run data quality validation
-        function runValidation() {
-            if (!currentData || currentData.length === 0) {
-                showAlert('Please load data first!', 'error');
-                return;
-            }
-
-            if (currentRules.length === 0) {
-                showAlert('Please add at least one validation rule!', 'error');
-                return;
-            }
-
-            // Show loading state
-            const btn = document.getElementById('runValidationBtn');
-            btn.innerHTML = '<div class="spinner"></div> Running Validation...';
-            btn.disabled = true;
-
-            // Simulate validation process
-            setTimeout(() => {
-                const violations = performValidation(currentData, currentRules);
-                displayValidationResults(violations);
-                
-                // Reset button
-                btn.innerHTML = '🚀 Run Data Quality Validation';
-                btn.disabled = false;
-            }, 2000);
-        }
-
-        // Perform validation logic
-        function performValidation(data, rules) {
-            const violations = [];
-            
-            rules.forEach(rule => {
-                switch (rule.type) {
-                    case 'required_columns':
-                        const missingColumns = rule.columns.filter(col => 
-                            !data[0] || !(col in data[0])
-                        );
-                        if (missingColumns.length > 0) {
-                            violations.push({
-                                type: 'error',
-                                message: `Missing required columns: ${missingColumns.join(', ')}`,
-                                details: `Rule: ${rule.name}`
-                            });
-                        }
-                        break;
-                        
-                    case 'completeness':
-                        rule.columns.forEach(col => {
-                            const missingValues = data.filter(row => 
-                                !row[col] || row[col].toString().trim() === ''
-                            );
-                            if (missingValues.length > 0) {
-                                violations.push({
-                                    type: 'warning',
-                                    message: `Missing values in column: ${col}`,
-                                    details: `${missingValues.length} rows have missing values`
-                                });
-                            }
-                        });
-                        break;
-                        
-                                            case 'range':
-                            Object.entries(rule.rules).forEach(([col, range]) => {
-                                const outOfRange = data.filter(row => {
-                                    const value = parseFloat(row[col]);
-                                    return isNaN(value) || value < range.min || value > range.max;
-                                });
-                                if (outOfRange.length > 0) {
-                                    violations.push({
-                                        type: 'error',
-                                        message: `Values out of range in column: ${col}`,
-                                        details: `${outOfRange.length} rows have values outside ${range.min}-${range.max}`
-                                    });
-                                }
-                            });
-                            break;
-                        case 'custom_range':
-                            const outOfRange = data.filter(row => {
-                                const value = parseFloat(row[rule.column]);
-                                return isNaN(value) || value < rule.min || value > rule.max;
-                            });
-                            if (outOfRange.length > 0) {
-                                violations.push({
-                                    type: 'error',
-                                    message: `Values out of range in column: ${rule.column}`,
-                                    details: `${outOfRange.length} rows have values outside ${rule.min}-${rule.max}`
-                                });
-                            }
-                            break;
-                        case 'custom_completeness':
-                            rule.columns.forEach(col => {
-                                const missingValues = data.filter(row => 
-                                    !row[col] || row[col].toString().trim() === ''
-                                );
-                                if (missingValues.length > 0) {
-                                    violations.push({
-                                        type: 'warning',
-                                        message: `Missing values in column: ${col}`,
-                                        details: `${missingValues.length} rows have missing values`
-                                    });
-                                }
-                            });
-                            break;
-                        case 'custom_format':
-                            const invalidFormat = data.filter(row => {
-                                const value = row[rule.column];
-                                if (!value) return false;
-                                return !validateFormat(value, rule.format);
-                            });
-                            if (invalidFormat.length > 0) {
-                                violations.push({
-                                    type: 'warning',
-                                    message: `Invalid format in column: ${rule.column}`,
-                                    details: `${invalidFormat.length} rows have invalid ${rule.format} format`
-                                });
-                            }
-                            break;
-                }
-            });
-            
-            return violations;
-        }
-
-        // Display validation results
-        function displayValidationResults(violations) {
-            const resultsContainer = document.getElementById('validationResults');
-            const violationsList = document.getElementById('violationsList');
-            
-            if (violations.length === 0) {
-                violationsList.innerHTML = '<div class="alert alert-success">✅ All validation rules passed! No violations found.</div>';
-            } else {
-                violationsList.innerHTML = violations.map(violation => `
-                    <div class="violation-item ${violation.type}">
-                        <div class="violation-header">
-                            <span class="violation-type ${violation.type}">${violation.type.toUpperCase()}</span>
-                        </div>
-                        <div class="violation-details">
-                            <strong>${violation.message}</strong><br>
-                            ${violation.details}
-                        </div>
-                    </div>
-                `).join('');
-            }
-            
-            resultsContainer.style.display = 'block';
-        }
-
-        // Export validation results
-        function exportResults() {
-            const violationsList = document.getElementById('violationsList');
-            const content = violationsList.innerText;
-            const blob = new Blob([content], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'validation-results.txt';
-            a.click();
-            URL.revokeObjectURL(url);
-        }
-
-        // Clear validation results
-        function clearResults() {
-            document.getElementById('validationResults').style.display = 'none';
-            document.getElementById('violationsList').innerHTML = '';
-        }
-
         // Teams Bot functions
         function previewMessage() {
-            const form = document.getElementById('standupForm');
-            const formData = new FormData(form);
-            
-            const message = generateTeamsMessage(formData);
-            document.getElementById('previewContent').innerHTML = message;
-            document.getElementById('messagePreview').style.display = 'block';
-        }
-
-        function generateTeamsMessage(formData) {
-            const teamName = formData.get('teamName') || 'Team';
-            const date = formData.get('date') || 'Today';
-            const yesterday = formData.get('yesterday') || 'Completed various tasks';
-            const today = formData.get('today') || 'Working on current priorities';
-            const blockers = formData.get('blockers') || 'None';
-            const template = formData.get('template') || 'professional';
+            const teamName = document.getElementById('teamName').value || 'Team';
+            const date = document.getElementById('date').value || 'Today';
+            const yesterday = document.getElementById('yesterday').value || 'Completed various tasks';
+            const today = document.getElementById('today').value || 'Working on current priorities';
+            const blockers = document.getElementById('blockers').value || 'None';
             
             let message = `<strong>📊 ${teamName} - Daily Stand-up</strong><br>`;
             message += `<em>Date: ${date}</em><br><br>`;
@@ -1980,7 +898,8 @@
             
             message += `<em>Generated by LabOps Metrics Starter Kit</em>`;
             
-            return message;
+            document.getElementById('previewContent').innerHTML = message;
+            document.getElementById('messagePreview').style.display = 'block';
         }
 
         function sendToTeams() {
@@ -2001,7 +920,7 @@
         function showAlert(message, type) {
             const alertDiv = document.createElement('div');
             alertDiv.className = `alert alert-${type}`;
-            alertDiv.textContent = message;
+            alertDiv.innerHTML = message;
             
             const container = document.querySelector('.container');
             container.insertBefore(alertDiv, container.firstChild);
@@ -2010,29 +929,6 @@
                 alertDiv.remove();
             }, 5000);
         }
-
-        // File upload drag and drop
-        const fileUpload = document.getElementById('fileUpload');
-        
-        fileUpload.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            fileUpload.classList.add('dragover');
-        });
-        
-        fileUpload.addEventListener('dragleave', () => {
-            fileUpload.classList.remove('dragover');
-        });
-        
-        fileUpload.addEventListener('drop', (e) => {
-            e.preventDefault();
-            fileUpload.classList.remove('dragover');
-            
-            const files = e.dataTransfer.files;
-            if (files.length > 0 && files[0].type === 'text/csv') {
-                document.getElementById('csvFile').files = files;
-                handleCSVUpload({ target: { files: files } });
-            }
-        });
     </script>
 </body>
 </html>
