@@ -104,7 +104,7 @@ The dashboard includes a "Trigger Teams Alert (Dry-Run)" button that:
 ### Interactive Demo Testing
 For testing the interactive features, use the provided test data file:
 
-**`test_lab_data.csv`** - Comprehensive lab data with intentional data quality issues
+**[`test_lab_data.csv`](test_lab_data.csv)** - Comprehensive lab data with intentional data quality issues
 - **50 specimen records** across 5 days (Jan 15-19, 2024)
 - **Multiple test types**: CBC, Chemistry Panel, Blood Culture, HIV Test, Urinalysis, Coagulation Panel, Stool Culture, Lipid Panel, Thyroid Function
 - **4 departments**: Hematology, Chemistry, Microbiology, Immunology
@@ -121,7 +121,7 @@ For testing the interactive features, use the provided test data file:
 
 ### Alternative Download Methods
 - **Direct download**: Click the file in GitHub and use "Raw" button
-- **Download page**: Open `download_test_data.html` in your browser
+- **Download page**: Open [`download_test_data.html`](download_test_data.html) in your browser
 - **Copy-paste**: Copy content and create new CSV file
 
 ## 📋 Data Quality
